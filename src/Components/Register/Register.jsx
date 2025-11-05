@@ -137,8 +137,10 @@ const Register = () => {
               value={formData.password}
               onChange={handleChange}
               className="shadow border rounded w-full py-2 px-3 text-gray-700"
+        
             />
           </div>
+          <h1>abs</h1>
 
           <div className="mb-4">
             <label htmlFor="confirmPassword" className="block text-gray-700 text-sm font-bold mb-2">
