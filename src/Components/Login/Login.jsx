@@ -1,25 +1,39 @@
-
+import axios from "axios";
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import toast from "react-hot-toast";
+import { useDispatch, useSelector } from "react-redux";
+import { loginUser } from "../../slice";
+
 
 function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const {loading}=useSelector((state)=>state.user);
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
+    setError("");
+
     if (!email || !password) {
       setError("Please fill in both fields.");
       return;
     }
-    if (email === "test@example.com" && password === "password123") {
-      setError("");
-      alert("Login successful!");
-      navigate("/home"); // navigating to the home path
-    } else {
-      setError("Invalid email or password.");
+    try {
+      const credentials = { email, password };
+      const result = await dispatch(loginUser(credentials)).unwrap();
+      toast.success("Login successful!");
+      localStorage.setItem("user", JSON.stringify(result));
+      navigate("/home");
+    } catch (err) {
+      console.error("Login error:", err);
+      const msg =
+        err?.message || err?.response?.data?.message || "Invalid credentials.";
+      toast.error(msg);
+      setError(msg);
     }
   };
 

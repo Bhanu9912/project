@@ -1,10 +1,16 @@
 
-import React, { useState } from 'react';
+import React, { use, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
+import axios from 'axios';
+import { registerUser } from '../../slice';
+import { useDispatch, useSelector } from 'react-redux';
+
 
 const Register = () => {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const {loading,error} = useSelector((state) => state.user);
 
   const [formData, setFormData] = useState({
     username: '',
@@ -16,7 +22,7 @@ const Register = () => {
   });
 
   const [photoPreview, setPhotoPreview] = useState(null);
-  const [error, setError] = useState('');
+  const [formError, setFormError] = useState('');
   const [success, setSuccess] = useState('');
 
   const handleChange = (e) => {
@@ -42,40 +48,56 @@ const Register = () => {
     return uppercaseRegex.test(password) && specialCharRegex.test(password);
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    setError('');
-    setSuccess('');
+  const handleSubmit = async (e) => {
+  e.preventDefault();
+  setFormError('');
+  setSuccess('');
 
-    if (
-      !formData.username ||
-      !formData.email ||
-      !formData.password ||
-      !formData.confirmPassword ||
-      !formData.phone ||
-      !formData.photo
-    ) {
-      setError('Please fill all input fields and upload a photo.');
-      return;
-    }
+  // ✅ Basic validation (you already had this)
+  if (
+    !formData.username ||
+    !formData.email ||
+    !formData.password ||
+    !formData.confirmPassword ||
+    !formData.phone ||
+    !formData.photo
+  ) {
+    setFormError('Please fill all input fields and upload a photo.');
+    return;
+  }
 
-    if (formData.password !== formData.confirmPassword) {
-      setError('Passwords do not match.');
-      return;
-    }
+  if (formData.password !== formData.confirmPassword) {
+    setError('Passwords do not match.');
+    return;
+  }
 
-    if (!validatePassword(formData.password)) {
-      setError('Password must contain at least one uppercase letter and one special character.');
-      return;
-    }
+  const uppercaseRegex = /[A-Z]/;
+  const specialCharRegex = /[!@#$%^&*(),.?":{}|<>]/;
+  if (!uppercaseRegex.test(formData.password) || !specialCharRegex.test(formData.password)) {
+    setError('Password must contain at least one uppercase letter and one special character.');
+    return;
+  }
 
-    console.log('Registered successfully with data:', formData);
+  const registerData = new FormData();
+registerData.append('username', formData.username);
+registerData.append('email', formData.email);
+registerData.append('password', formData.password);
+registerData.append('phone', formData.phone);
+registerData.append('photo', formData.photo);
 
-    toast.success('Registration successful');
-    setSuccess('Registration successful!');
 
-    navigate('/'); // Navigate to login page after registration
-  };
+  try {
+  await dispatch(registerUser(registerData)).unwrap();
+  toast.success('Registration successful!');
+  navigate('/'); // navigate to login page
+} catch (err) {
+  console.error('Register error:', err);
+  toast.error(err.message || 'Registration failed');
+}
+
+};
+
+  
 
   return (
     <div className="flex justify-end py-0 px-50 items-center min-h-screen bg-[url('/public/image.jpg')] bg-cover overflow-hidden">
