@@ -1,5 +1,4 @@
 
-
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -15,26 +14,27 @@ function Login() {
       setError("Please fill in both fields.");
       return;
     }
-    // Mock auth example
     if (email === "test@example.com" && password === "password123") {
       setError("");
       alert("Login successful!");
-      navigate("/dashboard");
+      navigate("/home"); // navigating to the home path
     } else {
       setError("Invalid email or password.");
     }
   };
 
   return (
-    // Full page background image container
-    <div className="min-h-screen  bg-[url('/image.jpg')] bg-cover  flex items-center  px-100 ">
-      {/* Login form container */}
-      <div className="rounded-lg  w-full px-50 py-20 flex justify-end  flex-col">
-        <h2 className="text-2xl font-semibold text-center mb-8">LOGIN TO YOUR ACCOUNT</h2>
+    <div className="min-h-screen bg-[url('/image.jpg')] bg-cover flex items-center px-100">
+      <div className="rounded-lg w-full px-50 py-20 flex justify-end flex-col">
+        <h2 className="text-2xl font-semibold text-center mb-8">
+          LOGIN TO YOUR ACCOUNT
+        </h2>
 
         <form onSubmit={handleLogin} className="space-y-6">
           <div>
-            <label className="block mb-2 text-sm font-medium text-gray-700">EMAIL ADDRESS</label>
+            <label className="block mb-2 text-sm font-medium text-gray-700">
+              EMAIL ADDRESS
+            </label>
             <input
               type="email"
               placeholder="Enter your email"
@@ -45,7 +45,9 @@ function Login() {
             />
           </div>
           <div>
-            <label className="block mb-2 text-sm font-medium text-gray-700">PASSWORD</label>
+            <label className="block mb-2 text-sm font-medium text-gray-700">
+              PASSWORD
+            </label>
             <input
               type="password"
               placeholder="Enter your password"
