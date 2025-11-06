@@ -27,9 +27,9 @@ function Login() {
 
   return (
     // Full page background image container
-    <div className="min-h-screen bg-[url('/image.jpg')] bg-cover bg-center flex items-center justify-end px-8 ">
+    <div className="min-h-screen  bg-[url('/image.jpg')] bg-cover  flex items-center  px-100 ">
       {/* Login form container */}
-      <div className="rounded-lg max-w-md w-full p-2 shadow-lg">
+      <div className="rounded-lg  w-full px-50 py-20 flex justify-end  flex-col">
         <h2 className="text-2xl font-semibold text-center mb-8">LOGIN TO YOUR ACCOUNT</h2>
 
         <form onSubmit={handleLogin} className="space-y-6">
