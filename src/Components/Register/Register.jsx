@@ -913,10 +913,10 @@ const Register = () => {
   const errorMessage = error?.message || (typeof error === 'string' ? error : '');
 
   return (
-    <div className=" bg-black/50 bg-blend-multiply flex justify-center items-center min-h-screen bg-[url('/public/img.jpg')] bg-cover p-6 pl-180 ">
-      <div className="w-full max-w-md p-6 rounded-lg border-2 transition-transform duration-300 hover:scale-105 bg-black shadow-2xl shadow-white">
-    <div className="flex justify-center items-center min-h-screen bg-[url('/public/img.jpg')] bg-cover p-6 pl-180">
-      <div className="w-full max-w-md p-6 rounded-lg border-2">
+    <div className=" bg-black/50 bg-blend-multiply flex justify-center items-center min-h-screen bg-[url('/public/img.jpg')] bg-cover bg-center p-6 pl-180 overflow-y-hidden">
+      <div className="w-full max-w-md p-6 rounded-lg border-2 transition-transform duration-300       hover:scale-105 bg-black shadow-2xl shadow-white overflow-y-hidden ">
+       {/* <div className="flex justify-center items-center min-h-screen bg-[url('/public/img.jpg')] bg-cover p-6 pl-180"> */}
+       {/* <div className="w-full max-w-md p-6 rounded-lg border-2"> */}
         <h2 className="text-2xl font-bold text-center mb-6">Registration</h2>
 
         {(formError || errorMessage) && (
@@ -924,14 +924,14 @@ const Register = () => {
         )}
         {success && <p className="text-green-600 text-center mb-4 font-semibold">{success}</p>}
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-4 ">
           {profilePhotoPreview && (
             <div className="flex justify-center mb-6">
               <img
                 src={profilePhotoPreview}
                 alt="Preview"
                 onClick={handlePreviewClick}
-                className="w-48 h-48 object-cover rounded-full border-4 border-blue-400 shadow-lg cursor-pointer hover:scale-105 transition-transform duration-300"
+                className="w-48 h-48 object-cover rounded-full border-4 border-white shadow-lg cursor-pointer hover:scale-105 transition-transform duration-300"
               />
             </div>
           )}
@@ -947,7 +947,7 @@ const Register = () => {
             <button
               type="button"
               onClick={() => document.getElementById('profileFileInput')?.click()}
-              className="px-4 py-2 border rounded bg-blue-50 text-blue-700 hover:bg-blue-100 font-medium"
+              className="px-4 py-2 border rounded bg-gradient-to-r from-indigo-600 to-pink-600  text-white transition-transform duration-300 hover:scale-105 hover:opacity-90 font-medium"
             >
               {profilePhotoPreview ? 'Change / Crop Photo' : 'Upload Profile Photo'}
             </button>
@@ -959,8 +959,8 @@ const Register = () => {
               name="username"
               value={formData.username}
               onChange={handleChange}
-              className="w-full  border-gray-300 rounded-lg bg-gray-50 rounded p-2 transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-indigo-400 focus:scale-105"
-              className="w-full border rounded p-2 focus:scale-110 focus:border-blue-500 focus:outline-none transition-transform duration-300"
+              className="w-full  border-gray-300 rounded-lg bg-gray-50 rounded p-2 px-5 transition-all duration-300 focus:outline-none focus:ring-3 focus:ring-indigo-300 focus:scale-110"
+              placeholder='Enter your name'
             />
           </div>
 
@@ -971,8 +971,8 @@ const Register = () => {
               type="email"
               value={formData.email}
               onChange={handleChange}
-              className="w-full  border-gray-300 rounded-lg bg-gray-50 rounded p-2 focus:scale-110 focus:ring-indigo-300 focus:outline-none transition-transform duration-300"
-              className="w-full border rounded p-2 focus:scale-110 focus:border-blue-500 focus:outline-none transition-transform duration-300"
+              className="w-full  border-gray-300 rounded-lg bg-gray-50 rounded p-2 px-5 focus:scale-110 focus:ring-indigo-300 focus:ring-3 focus:outline-none transition-transform duration-300"
+             placeholder='Enter your email'
             />
           </div>
 
@@ -983,8 +983,8 @@ const Register = () => {
               name="password"
               value={formData.password}
               onChange={handleChange}
-              className="w-full  border-gray-300 rounded-lg bg-gray-50 rounded p-2 pr-10 focus:scale-110 focus:ring-indigo-300 focus:outline-none transition-transform duration-300"
-              className="w-full border rounded p-2 pr-10 focus:scale-110 focus:border-blue-500 focus:outline-none transition-transform duration-300"
+              className="w-full  border-gray-300 rounded-lg bg-gray-50 rounded p-2 px-5 pr-10 focus:scale-110 focus:ring-3 focus:ring-indigo-300 focus:outline-none transition-transform duration-300"
+              placeholder='Enter your password'
             />
             <button
               type="button"
@@ -1002,8 +1002,9 @@ const Register = () => {
               name="confirmPassword"
               value={formData.confirmPassword}
               onChange={handleChange}
-              className={`w-full  border-gray-300 rounded-lg bg-gray-50 rounded p-2 pr-10 focus:scale-110 focus:ring-indigo-300 focus:outline-none transition-transform duration-300 ${
-              className={`w-full border rounded p-2 pr-10 focus:scale-110 focus:border-blue-500 focus:outline-none transition-transform duration-300 ${
+              placeholder='Re-enter password'
+              className={`w-full  border-gray-300 rounded-lg bg-gray-50 rounded p-2 px-5 pr-10 focus:scale-110 focus:ring-3 focus:ring-indigo-300 focus:outline-none transition-transform duration-300 ${
+
                 passwordMismatch ? 'border-red-500' : ''
               }`}
             />
@@ -1019,7 +1020,7 @@ const Register = () => {
               <p className="text-red-500 text-xs mt-1">Passwords do not match.</p>
             )}
           </div>
-
+{/* 
           <div>
             <label className="block mb-2 text-sm font-medium text-white">Phone Number</label>
             <input
@@ -1027,16 +1028,16 @@ const Register = () => {
               type="tel"
               value={formData.phone}
               onChange={handleChange}
-              className="w-full  border-gray-300 rounded-lg bg-gray-50 bg-gray-100 bg-white rounded p-2 focus:ring-indigo-300 focus:border-blue-500 focus:outline-none transition-transform duration-300"
-              className="w-full border rounded p-2 focus:scale-110 focus:border-blue-500 focus:outline-none transition-transform duration-300"
+              className="w-full  border-gray-300 rounded-lg bg-gray-50 bg-gray-100 bg-white rounded p-2  px-5 focus:ring-indigo-300 focus:scale-110 focus:border-blue-500 focus:outline-none transition-transform duration-300"
+             placeholder='Enter your phone-No'
             />
-          </div>
+          </div> */}
 
-          <div className="flex justify-center">
+          <div className="flex justify-center py-4">
             <button
               type="submit"
               disabled={loading}
-              className={`bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded ${
+              className={`bg-gradient-to-r from-indigo-600 to-pink-600 text-white font-bold  py-2 px-4 w-full border rounded transition-transform duration-300 hover:scale-105 hover:opacity-90 ${
                 loading ? 'opacity-50 cursor-not-allowed' : ''
               }`}
             >
