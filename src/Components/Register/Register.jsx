@@ -6,6 +6,8 @@ import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { registerUser } from '../../slice';
 import { useDispatch, useSelector } from 'react-redux';
+import { motion } from 'framer-motion';
+
 
 const getCroppedImg = (imageSrc, pixelCrop) => {
   return new Promise((resolve, reject) => {
@@ -139,7 +141,7 @@ const Register = () => {
       !formData.email ||
       !formData.password ||
       !formData.confirmPassword ||
-      !formData.phone ||
+      // !formData.phone ||
       !formData.profilePhoto
     ) {
       setFormError('Please fill all input fields and upload a profile photo.');
@@ -184,8 +186,8 @@ const Register = () => {
   const errorMessage = error?.message || (typeof error === 'string' ? error : '');
 
   return (
-    <div className=" bg-black/50 bg-blend-multiply flex justify-end px-30 items-center min-h-screen bg-[url('https://img.pikbest.com/wp/202345/glass-reflection-couple-is-reflected-into-ball-with-the-rain-falling-down_9584510.jpg!f305cw')] bg-cover bg-center p-6  overflow-y-hidden max-sm:p-10">
-      <div className="w-full backdrop-blur-[20px] max-w-md p-6 rounded-lg  transition-transform duration-300       hover:scale-105  shadow-2xl  bg-black/30 overflow-y-hidden bg-no-repeat bg-cover   ">
+    <div className="min-h-screen bg-[url('/img.jpg')] bg-cover flex items-center justify-end px-100 pr-50   bg-black/50 bg-blend-multiply">
+      <div className="  w-full max-w-md p-10 transition-transform duration-300 hover:scale-105 border-2 bg-black/50 shadow-2xl shadow-white rounded-2xl   ">
        {/* <div className="flex justify-center items-center min-h-screen bg-[url('/public/img.jpg')] bg-cover p-6 pl-180"> */}
        {/* <div className="w-full max-w-md p-6 rounded-lg border-2"> */}
         <h2 className="text-2xl font-bold text-center mb-6 text-white">Registration</h2>
@@ -196,16 +198,44 @@ const Register = () => {
         {success && <p className="text-green-600 text-center mb-4 font-semibold">{success}</p>}
 
         <form onSubmit={handleSubmit} className="space-y-4  ">
-          {profilePhotoPreview && (
-            <div className="flex justify-center mb-6">
-              <img
-                src={profilePhotoPreview}
-                alt="Preview"
-                onClick={handlePreviewClick}
-                className="w-48 h-48 object-cover rounded-full border-4 border-white shadow-lg cursor-pointer hover:scale-105 transition-transform duration-300"
-              />
-            </div>
-          )}
+         {/* Book Page Animation for Profile Preview */}
+  {profilePhotoPreview && (
+  <div className="flex justify-center mb-6 relative h-[300px]">
+    <motion.div
+      initial={{ rotateY: -180, opacity: 0 }}
+      animate={{ rotateY: 0, opacity: 1 }}
+      transition={{ duration: 1.5, ease: "easeInOut" }}
+      whileHover={{ rotateY: 25 }}
+      className="relative w-[250px] h-[300px] [transform-style:preserve-3d] [perspective:1000px] cursor-pointer group"
+      onClick={handlePreviewClick}
+    >
+      {/* Front side */}
+      <motion.div
+        className="absolute inset-0 [backface-visibility:hidden] rounded-xl overflow-hidden shadow-2xl"
+        whileHover={{ rotateY: -20 }}
+        transition={{ duration: 0.8 }}
+      >
+        <img
+          src={profilePhotoPreview}
+          alt="Profile Preview"
+          className="w-full h-full object-cover border-4 border-white rounded-xl"
+        />
+      </motion.div>
+
+      {/* Back side */}
+      <div
+        className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-indigo-600 to-pink-600 rounded-xl text-white text-lg font-semibold [transform:rotateY(180deg)] [backface-visibility:hidden]"
+      >
+        <p>Click to Crop / Change</p>
+      </div>
+
+      {/* Page shadow effect */}
+      <div className="absolute inset-0 bg-black/10 rounded-xl group-hover:bg-black/20 transition-all duration-500 pointer-events-none"></div>
+    </motion.div>
+  </div>
+)}
+
+
 
           <div className="flex justify-center mb-4">
             <input
