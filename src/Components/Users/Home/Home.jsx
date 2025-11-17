@@ -1,335 +1,334 @@
-import React, { useState, useRef, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+
+import React, { useState } from "react";
 import {
-  FiBell,
   FiSearch,
   FiHome,
   FiPlus,
-  FiSettings,
   FiUserPlus,
+  FiBell,
+  FiSettings,
   FiLogOut,
 } from "react-icons/fi";
 
 export default function Home() {
-  const [activeButton, setActiveButton] = useState("");
-  const navigate = useNavigate();
-
-  const [feed, setFeed] = useState([
-    { id: 1, title: "First content from your network", author: "Alice" },
-    { id: 2, title: "Another content update", author: "Bob" },
-    { id: 3, title: "Yet another content", author: "Carol" },
-  ]);
-
-  const [people, setPeople] = useState([
-    { id: 1, name: "ABC", avatar: "A", added: false },
-    { id: 2, name: "DEF", avatar: "D", added: false },
-    { id: 3, name: "GHI", avatar: "G", added: false },
-  ]);
-
-  const [search, setSearch] = useState("");
+  const [active, setActive] = useState("Home");
   const [showNewPost, setShowNewPost] = useState(false);
-  const [newPostText, setNewPostText] = useState("");
-  const [notifications, setNotifications] = useState([
-    { id: 1, text: "Alice liked your post", read: false },
-    { id: 2, text: "New comment from Bob", read: false },
+  const [showNotificationsModal, setShowNotificationsModal] = useState(false);
+  const [posts, setPosts] = useState([
+    { id: 1, author: "Asha", title: "Hello", content: "First content sample" },
+    { id: 2, author: "Ravi", title: "Update", content: "Second content sample" },
+    { id: 3, author: "Megha", title: "Good Day", content: "It's a sunny day!" },
+    { id: 4, author: "Rohan", title: "Travel", content: "Exploring new places!" },
+    { id: 5, author: "Kiran", title: "Fitness", content: "Morning workout done!" },
   ]);
-  const [showNotif, setShowNotif] = useState(false);
-  const [showProfile, setShowProfile] = useState(false);
+  const [notifications, setNotifications] = useState([
+    { id: 1, text: "Asha liked your post", read: false },
+    { id: 2, text: "Ravi started following you", read: false },
+    { id: 3, text: "Megha shared your post", read: false },
+    { id: 4, text: "Kiran commented on your post", read: false },
+  ]);
+  const [user, setUser] = useState({ name: "username" });
 
-  const peopleRef = useRef(null);
-  const feedRef = useRef(null);
+  const [title, setTitle] = useState("");
+  const [content, setContent] = useState("");
 
-  const filteredFeed = feed.filter(
-    (f) =>
-      f.title.toLowerCase().includes(search.toLowerCase()) ||
-      f.author.toLowerCase().includes(search.toLowerCase())
-  );
+  function handleSidebarClick(name) {
+    setActive(name);
 
-  const handleButtonClick = (buttonName) => {
-    setActiveButton(buttonName);
-
-    if (buttonName === "addfriends") {
-      peopleRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-    }
-    if (buttonName === "newpost") {
+    if (name === "New Post+") {
       setShowNewPost(true);
+      setShowNotificationsModal(false);
+    } else if (name === "Notification") {
+      setShowNotificationsModal(true);
+      setShowNewPost(false);
+    } else {
+      setShowNewPost(false);
+      setShowNotificationsModal(false);
     }
-    if (buttonName === "home") {
-      feedRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-    }
-    if (buttonName === "notification") {
-      setShowNotif((s) => !s);
-    }
-    if (buttonName === "profile") {
-      setShowProfile((s) => !s);
-    }
-    if (buttonName === "logout") {
-      // navigate to logout route
-      navigate("/logout");
-    }
-  };
+  }
 
-  const toggleAdd = (id) => {
-    setPeople((prev) =>
-      prev.map((p) => (p.id === id ? { ...p, added: !p.added } : p))
-    );
-  };
-
-  const removePerson = (id) => {
-    setPeople((prev) => prev.filter((p) => p.id !== id));
-  };
-
-  const submitNewPost = (e) => {
+  function submitPost(e) {
     e.preventDefault();
-    if (!newPostText.trim()) return;
-    const newItem = { id: Date.now(), title: newPostText.trim(), author: "You" };
-    setFeed((prev) => [newItem, ...prev]);
-    setNewPostText("");
-    setShowNewPost(false);
-  };
-
-  const markAllRead = () => {
-    setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
-    setShowNotif(false);
-  };
-
-  useEffect(() => {
-    const onClick = (e) => {
-      const notifEl = document.getElementById("notif-dropdown");
-      const bellEl = document.getElementById("notif-bell");
-      if (
-        notifEl &&
-        !notifEl.contains(e.target) &&
-        bellEl &&
-        !bellEl.contains(e.target)
-      ) {
-        setShowNotif(false);
-      }
+    if (!content.trim()) return alert("Please add content.");
+    const newPost = {
+      id: Date.now(),
+      author: user.name,
+      title: title || "Untitled",
+      content: content,
     };
-    document.addEventListener("click", onClick);
-    return () => document.removeEventListener("click", onClick);
-  }, []);
+    setPosts((p) => [newPost, ...p]);
+    setNotifications((n) => [
+      { id: Date.now(), text: `${user.name} created a post`, read: false },
+      ...n,
+    ]);
+    setTitle("");
+    setContent("");
+    setShowNewPost(false);
+    setActive("Home");
+  }
+
+  function handleLogout() {
+    if (confirm("Are you sure you want to logout?")) {
+      setUser(null);
+      setActive("");
+      alert("Logged out (demo).");
+    }
+  }
+
+  function markAllRead() {
+    setNotifications((n) => n.map((item) => ({ ...item, read: true })));
+  }
+
+  function toggleNotificationsFromHeader() {
+    setShowNotificationsModal((s) => !s);
+    setActive("Notification");
+    setShowNewPost(false);
+  }
 
   return (
-    <div className="min-h-screen bg-gray-100 p-6 font-sans w-full">
-      <div className="w-full grid grid-cols-12 gap-6">
-        {/* Left sidebar */}
-        <aside className="col-span-3 bg-white rounded-lg shadow-sm p-6 sticky top-6 h-[calc(100vh-48px)] overflow-auto">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-purple-700 text-white flex items-center justify-center font-bold">
-              B
-            </div>
-            <h2 className="text-xl font-semibold">Blogger</h2>
+    <div className="min-h-screen bg-white flex text-gray-900">
+      {/* Sidebar */}
+      <aside className="w-72 border-r px-6 py-8">
+        <div className="flex items-center gap-3 mb-8">
+          <div className="w-10 h-10 rounded-full bg-purple-700 flex items-center justify-center text-white font-bold">
+            B
           </div>
+          <h1 className="text-2xl font-semibold">Blogger</h1>
+        </div>
 
-          <div className="mt-6 flex flex-col items-center">
-            <div className="w-24 h-24 rounded-full bg-purple-100 flex items-center justify-center text-4xl text-purple-700">
-              👤
-            </div>
-            <p className="mt-3 text-gray-700">username</p>
-            <button
-              onClick={() => handleButtonClick("profile")}
-              className="mt-2 bg-violet-600 text-white px-4 py-1 rounded-full text-sm"
-            >
-              MyProfile
-            </button>
+        <div className="flex flex-col items-center mb-6">
+          <div className="w-36 h-36 rounded-full bg-purple-100 flex items-center justify-center">
+            <div className="text-6xl text-purple-500">👤</div>
           </div>
+          <div className="mt-3 text-lg">{user ? user.name : "Guest"}</div>
+          <button
+            className="mt-3 bg-purple-600 text-white px-4 py-2 rounded-md"
+            onClick={() => alert("Go to profile (demo)")}
+          >
+            MyProfile
+          </button>
+        </div>
 
-          <nav className="mt-6 grid gap-3">
-            <button
-              onClick={() => handleButtonClick("home")}
-              className={`border rounded-md p-3 text-left flex items-center gap-2 ${
-                activeButton === "home" ? "bg-blue-500 text-white" : "bg-white"
-              }`}
-            >
-              <FiHome /> Home
-            </button>
-            <button
-              onClick={() => handleButtonClick("newpost")}
-              className={`border rounded-md p-3 text-left flex items-center gap-2 ${
-                activeButton === "newpost"
-                  ? "bg-blue-500 text-white"
-                  : "bg-white"
-              }`}
-            >
-              <FiPlus /> New Post+
-            </button>
-            <button
-              onClick={() => handleButtonClick("addfriends")}
-              className={`border rounded-md p-3 text-left flex items-center gap-2 ${
-                activeButton === "addfriends"
-                  ? "bg-blue-500 text-white"
-                  : "bg-white"
-              }`}
-            >
-              <FiUserPlus /> Add Friends+
-            </button>
-            <button
-              id="notif-bell"
-              onClick={() => handleButtonClick("notification")}
-              className={`border rounded-md p-3 text-left flex items-center gap-2 ${
-                activeButton === "notification"
-                  ? "bg-blue-500 text-white"
-                  : "bg-white"
-              }`}
-            >
-              <FiBell /> Notification
-            </button>
-            <button
-              onClick={() => handleButtonClick("settings")}
-              className={`border rounded-md p-3 text-left flex items-center gap-2 ${
-                activeButton === "settings"
-                  ? "bg-blue-500 text-white"
-                  : "bg-white"
-              }`}
-            >
-              <FiSettings /> Settings
-            </button>
-
-            <button
-              onClick={() => handleButtonClick("logout")}
-              className={`border rounded-md p-3 text-left flex items-center gap-2 ${
-                activeButton === "logout"
-                  ? "bg-red-500 text-white"
-                  : "bg-white text-red-600"
-              }`}
-            >
-              <FiLogOut /> Logout
-            </button>
-          </nav>
-
-          {showProfile && (
-            <div className="mt-6 bg-gray-50 p-4 rounded-md">
-              <h4 className="font-semibold">Profile</h4>
-              <p className="text-sm text-gray-600">username • blogger</p>
-              <button className="mt-3 px-3 py-1 rounded-md bg-white border">
-                Edit profile
-              </button>
-            </div>
-          )}
-
-          {showNotif && (
-            <div id="notif-dropdown" className="mt-4 bg-white border rounded-md p-3">
-              <div className="flex justify-between items-center">
-                <strong>Notifications</strong>
-                <button onClick={markAllRead} className="text-sm text-blue-500">
-                  Mark all
-                </button>
-              </div>
-              <ul className="mt-2">
-                {notifications.map((n) => (
-                  <li
-                    key={n.id}
-                    className={`text-sm py-1 ${n.read ? "text-gray-400" : "text-gray-800"}`}
+        <nav className="space-y-4">
+          {[
+            { name: "Home", icon: <FiHome /> },
+            { name: "New Post+", icon: <FiPlus /> },
+            { name: "Add Friends+", icon: <FiUserPlus /> },
+            { name: "Notification", icon: <FiBell /> },
+            { name: "Settings", icon: <FiSettings /> },
+          ].map((item) => {
+            const isActive = active === item.name;
+            return (
+              <button
+                key={item.name}
+                onClick={() => handleSidebarClick(item.name)}
+                className={`flex items-center gap-3 w-full justify-between border rounded px-4 py-3 text-left
+                  ${
+                    isActive
+                      ? "bg-blue-600 text-white border-blue-600"
+                      : "bg-white text-gray-900"
+                  }
+                  hover:shadow-sm transition`}
+              >
+                <div className="flex items-center gap-3">
+                  <span
+                    className={`text-xl ${
+                      isActive ? "text-white" : "text-gray-600"
+                    }`}
                   >
-                    {n.text}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
-        </aside>
+                    {item.icon}
+                  </span>
+                  <span className="text-lg">{item.name}</span>
+                </div>
+              </button>
+            );
+          })}
 
-        {/* Main column */}
-        <main className="col-span-9">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-4 w-full">
-              <div className="relative flex-1">
-                <input
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  className="w-full rounded-full border px-4 py-2 pl-10 bg-white shadow-sm"
-                  placeholder="Search posts or authors.."
-                />
-                <FiSearch className="absolute left-3 top-2.5 text-gray-400" />
-              </div>
+          <button
+            onClick={() => {
+              setActive("Logout");
+              handleLogout();
+            }}
+            className={`flex items-center gap-3 w-full justify-between border rounded px-4 py-3 text-left
+              ${
+                active === "Logout"
+                  ? "bg-blue-600 text-white border-blue-600"
+                  : "bg-white text-gray-900"
+              }`}
+          >
+            <div className="flex items-center gap-3">
+              <span
+                className={`text-xl ${
+                  active === "Logout" ? "text-white" : "text-gray-600"
+                }`}
+              >
+                <FiLogOut />
+              </span>
+              <span className="text-lg">Logout</span>
             </div>
-            <div className="ml-4 text-2xl text-yellow-600 relative">
-              <FiBell />
-            </div>
+          </button>
+        </nav>
+      </aside>
+
+      {/* Main */}
+      <main className="flex-1 p-8">
+        {/* Header with big full-width search bar up to notification icon */}
+        <header className="flex items-center justify-between mb-6 w-full">
+          <div className="relative flex-1 mr-6">
+            <FiSearch className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-500" />
+            <input
+              placeholder="Search.."
+              className="w-full border rounded-full py-3 pl-12 pr-4 outline-none text-lg"
+            />
           </div>
 
-          <section ref={feedRef} className="bg-white rounded-lg p-4 shadow-sm">
-            <h3 className="font-bold text-lg mb-2">Latest from your network</h3>
-            <div className="border-t border-gray-200 mt-2" />
+          <button
+            onClick={toggleNotificationsFromHeader}
+            className={`relative p-3 rounded-full ${
+              showNotificationsModal
+                ? "bg-blue-600 text-white"
+                : "bg-transparent text-gray-800"
+            }`}
+            aria-label="Toggle notifications"
+          >
+            <FiBell className="text-2xl" />
+            {notifications.some((n) => !n.read) && (
+              <span className="absolute -top-1 -right-1 text-xs bg-red-500 text-white rounded-full px-1">
+                !
+              </span>
+            )}
+          </button>
+        </header>
 
-            <div className="space-y-6 mt-4">
-              {filteredFeed.length === 0 && (
-                <div className="text-center text-gray-500 py-8">No posts match your search.</div>
-              )}
-              {filteredFeed.map((f) => (
-                <article key={f.id} className="py-6 border-b border-gray-100">
-                  <h4 className="font-bold text-xl">{f.title}</h4>
-                  <p className="text-sm text-gray-500 mt-1">by {f.author}</p>
+        <h2 className="text-3xl font-bold mb-4">Latest from your network</h2>
+
+        <div className="flex gap-8">
+          <div className="flex-1">
+            <div className="space-y-6">
+              {posts.map((p) => (
+                <article key={p.id} className="border-b pb-6">
+                  <div className="flex items-start gap-4 mb-2">
+                    <div className="w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center">
+                      👤
+                    </div>
+                    <div>
+                      <div className="font-semibold">{p.author}</div>
+                      <div className="text-2xl font-extrabold mt-2">
+                        {p.title}
+                      </div>
+                    </div>
+                  </div>
+                  <p className="pl-16 text-lg">{p.content}</p>
                 </article>
               ))}
             </div>
+          </div>
+        </div>
+      </main>
 
-            {/* Friends section below latest */}
-            <div ref={peopleRef} className="mt-6 pt-4 border-t">
-              <div className="flex items-center justify-between mb-3">
-                <h4 className="font-bold text-lg">People you may know</h4>
-                <button
-                  onClick={() => alert("Show all people (placeholder)")}
-                  className="text-sm text-violet-600"
-                >
-                  see all
-                </button>
-              </div>
-
-              <div className="grid grid-cols-3 gap-6">
-                {people.map((p) => (
-                  <div key={p.id} className="bg-gray-50 rounded-md p-4 flex flex-col items-center">
-                    <div className="w-20 h-20 rounded-full bg-purple-100 flex items-center justify-center text-2xl text-purple-700">
-                      {p.avatar}
-                    </div>
-                    <div className="mt-3 font-semibold">{p.name}</div>
-
-                    <div className="mt-4 flex gap-3">
-                      <button
-                        onClick={() => toggleAdd(p.id)}
-                        className={`px-4 py-2 rounded-md border ${p.added ? "bg-blue-500 text-white border-blue-500" : "bg-white"}`}
-                      >
-                        {p.added ? "Added" : "Add"}
-                      </button>
-                      <button
-                        onClick={() => removePerson(p.id)}
-                        className="px-4 py-2 rounded-md border bg-white text-red-600"
-                      >
-                        Remove
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </section>
-        </main>
-      </div>
-
-      {/* New post modal */}
+      {/* New Post Modal */}
       {showNewPost && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-          <form onSubmit={submitNewPost} className="bg-white rounded-md p-6 w-full max-w-lg">
-            <h4 className="text-lg font-bold mb-3">Create new post</h4>
-            <textarea
-              value={newPostText}
-              onChange={(e) => setNewPostText(e.target.value)}
-              rows={5}
-              className="w-full border rounded-md p-2"
-              placeholder="What's on your mind?"
-            />
-            <div className="mt-4 flex justify-end gap-3">
-              <button type="button" onClick={() => setShowNewPost(false)} className="px-4 py-2 border rounded-md">
-                Cancel
-              </button>
-              <button type="submit" className="px-4 py-2 bg-blue-500 text-white rounded-md">
-                Post
+          <div className="bg-white rounded-lg w-2/3 max-w-2xl p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-xl font-semibold">Create New Post</h3>
+              <button
+                onClick={() => setShowNewPost(false)}
+                className="text-gray-500"
+              >
+                Close
               </button>
             </div>
-          </form>
+
+            <form onSubmit={submitPost} className="space-y-4">
+              <input
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                placeholder="Title (optional)"
+                className="w-full border rounded px-3 py-2 outline-none"
+              />
+              <textarea
+                required
+                value={content}
+                onChange={(e) => setContent(e.target.value)}
+                placeholder="Write something..."
+                className="w-full border rounded px-3 py-2 h-36 outline-none"
+              />
+              <div className="flex items-center justify-end gap-3">
+                <button
+                  type="button"
+                  onClick={() => setShowNewPost(false)}
+                  className="px-4 py-2 border rounded"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 bg-purple-600 text-white rounded"
+                >
+                  Publish
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Notifications Modal */}
+      {showNotificationsModal && (
+        <div
+          className="fixed inset-0 bg-black/40 flex items-center justify-center z-50"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Notifications"
+        >
+          <div className="bg-white rounded-lg w-96 max-w-full p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-xl font-semibold">Notifications</h3>
+              <div className="flex items-center gap-2">
+                <button onClick={markAllRead} className="text-sm underline">
+                  Mark all read
+                </button>
+                <button
+                  onClick={() => {
+                    setShowNotificationsModal(false);
+                    setActive("Home");
+                  }}
+                  className="text-gray-500"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+
+            <div className="max-h-64 overflow-y-auto space-y-3">
+              {notifications.length === 0 && (
+                <div className="text-sm text-gray-500">No notifications</div>
+              )}
+              {notifications.map((n) => (
+                <div
+                  key={n.id}
+                  className={`p-3 rounded flex items-start gap-3 ${
+                    n.read ? "bg-gray-100" : "bg-white shadow-sm"
+                  }`}
+                >
+                  <div className="w-9 h-9 rounded-full bg-purple-100 flex items-center justify-center">
+                    🔔
+                  </div>
+                  <div>
+                    <div className="text-sm">{n.text}</div>
+                    <div className="text-xs text-gray-400">
+                      {n.read ? "Read" : "New"}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       )}
     </div>
   );
 }
+
+
