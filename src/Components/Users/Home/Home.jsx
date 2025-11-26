@@ -15,6 +15,7 @@ import {
   FiUser,
   FiX,
 } from "react-icons/fi";
+import { useSelector } from "react-redux";
 
 const initialPosts = [
   {
@@ -447,6 +448,8 @@ export default function Home() {
   const [activeNav, setActiveNav] = useState("home");
   const [sidePanel, setSidePanel] = useState(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
+  let {user}=useSelector((a)=>a.user)
+  // console.log(user)
 
   // notification & recent searches state moved to top-level so SlidePanel can update/clear them
   const [notificationsState, setNotificationsState] = useState(initialNotifications);
@@ -493,19 +496,23 @@ export default function Home() {
         <aside className="w-64 bg-white border-r border-gray-200 flex flex-col items-center py-8 gap-8 flex-shrink-0">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-full bg-purple-700 text-white flex items-center justify-center text-lg font-bold">
-              B
+              {
+                user.user.username[0].toUpperCase()
+              }
             </div>
             <span className="font-semibold text-lg">BlogVerse</span>
           </div>
 
           <div className="flex flex-col items-center gap-3">
             <img
-              src="/mnt/data/Screenshot 2025-11-19 131334.png"
+              src={`data:image/jpeg;base64,${user.user.profilePhoto}`}
               alt="profile"
               className="w-24 h-24 rounded-full object-cover"
             />
 
-            <span className="font-medium">UserName</span>
+            <span className="font-medium">
+              {user.user.username}
+            </span>
 
             <div className="mt-2 flex items-center gap-4 text-sm text-gray-600">
               <div className="text-center">
@@ -513,11 +520,15 @@ export default function Home() {
                 <div className="text-xs">Posts</div>
               </div>
               <div className="text-center">
-                <div className="font-semibold text-gray-900">100</div>
+                <div className="font-semibold text-gray-900">{
+                  user.user.following.length
+                  }</div>
                 <div className="text-xs">Following</div>
               </div>
               <div className="text-center">
-                <div className="font-semibold text-gray-900">1.2k</div>
+                <div className="font-semibold text-gray-900">{
+                  user.user.followers.length
+                  }</div>
                 <div className="text-xs">Followers</div>
               </div>
             </div>

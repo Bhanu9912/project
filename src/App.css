@@ -1,6 +1,6 @@
 @import "tailwindcss";
 
-/* index.css or App.css */
+/* index.css or App.css
 .perspective {
   perspective: 1200px;
 }
@@ -15,5 +15,27 @@
 
 .rotate-y-180 {
   transform: rotateY(180deg);
-}
+} */
 
+/* Scope */
+/* GLOBAL */
+
+
+/* .float{
+animation: floatup 1s linear forwards;
+} */
+
+
+@theme {
+  --animate-floatup: floatup 1s linear forwards;
+@keyframes floatup {
+  0%{
+transform: translate(0px,0px);
+opacity: 1;
+  } 
+  100%{
+transform: translate(600px,-400px);
+opacity: 0;
+  }
+}
+}
