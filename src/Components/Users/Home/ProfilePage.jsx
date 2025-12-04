@@ -3,7 +3,6 @@
 import React, { useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import Navbar from "./Navbar";
-// import { getAllBlogs, toggleLike, addComment } from "../../BlogSlice";
 import { getAllBlogs, toggleLike, addComment } from "../../../BlogSlice";
 import { FiHeart, FiMessageCircle } from "react-icons/fi";
 import RightProfileCard from "./RightProfileCard";

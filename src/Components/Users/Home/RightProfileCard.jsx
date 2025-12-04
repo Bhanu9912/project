@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
-import EditProfileModal from "./EditProfileModal";
+
 // import { updateProfile } from "../../authSlice";
 import { updateProfile } from "../../../authSlice";
 
@@ -23,14 +23,14 @@ export default function RightProfileCard({ postsCount }) {
             <div className="flex flex-col items-center mb-4">
               <img
                 src={
-                  user?.profilePhoto
-                    ? `data:image/jpeg;base64,${user.profilePhoto}`
+                  user?.user?.profilePhoto
+                    ? `data:image/jpeg;base64,${user.user?.profilePhoto}`
                     : "/default-avatar.png"
                 }
                 className="w-24 h-24 rounded-full object-cover shadow mb-3"
               />
-              <div className="font-semibold text-lg">{user?.username}</div>
-              <div className="text-gray-500 text-sm">{user?.email}</div>
+              <div className="font-semibold text-lg">{user?.user?.username}</div>
+              <div className="text-gray-500 text-sm">{user?.user?.email}</div>
             </div>
 
             <div className="grid grid-cols-3 gap-4 text-center mb-6 text-sm">
@@ -74,3 +74,5 @@ export default function RightProfileCard({ postsCount }) {
     </>
   );
 }
+
+
