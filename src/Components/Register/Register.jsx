@@ -10,7 +10,9 @@ import React, {
 import Cropper from "react-easy-crop";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
-import { registerUser } from "../../slice";
+// import { registerUser } from "../../slice";
+// import { registerUser } from "../../slice";
+import { registerUser } from "../../authSlice";
 import { useDispatch, useSelector } from "react-redux";
 import { FiEye, FiEyeOff } from "react-icons/fi";
 

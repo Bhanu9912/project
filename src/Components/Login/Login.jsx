@@ -4,7 +4,9 @@ import React, { useEffect, useRef, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import { useDispatch, useSelector } from "react-redux";
-import { loginUser } from "../../slice";
+import { loginUser } from "../../authSlice";
+
+
 import { FiEye, FiEyeOff } from "react-icons/fi";
 
 const Login = () => {
@@ -36,8 +38,6 @@ const Login = () => {
       const result = await dispatch(loginUser(credentials)).unwrap();
 
       toast.success("Login successful!");
-
-      localStorage.setItem("user", JSON.stringify(result));
 
       navigate("/home");
     } catch (err) {
@@ -363,4 +363,6 @@ const Login = () => {
 };
 
 export default Login;
+
+
 
