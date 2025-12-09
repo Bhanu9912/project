@@ -5,7 +5,7 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
 
-const BASE_URL = "https://robo-1-qqhu.onrender.com";
+const BASE_URL = "https://robo-zv8u.onrender.com";
 
 
 const initialState = {

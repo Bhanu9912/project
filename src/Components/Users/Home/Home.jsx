@@ -1,7 +1,9 @@
 
 import React, { useState } from "react";
 import Navbar from "./Navbar";
-import { CreateBlogModal } from "./AddFriends";
+// import { CreateBlogModal } from "./AddFriends";
+import CreateBlogModal from "./CreateBlogModal";
+
 import { useNavigate } from "react-router-dom";
 import {
   FiHome,
