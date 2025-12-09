@@ -28,6 +28,7 @@
     "react-router-dom": "^7.9.5",
     "routes": "^2.1.0",
     "rtk": "^4.1.0",
+    "socket.io-client": "^4.8.1",
     "tailwindcss": "^4.1.16",
     "toast": "^0.5.4",
     "val-pass": "^3.0.3"
