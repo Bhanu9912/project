@@ -1,7 +1,4 @@
 
-
-
-
 import axios from "axios";
 
 const BASE_URL =
@@ -20,7 +17,7 @@ export const sendFollowRequest = async (targetUsername, token) => {
   );
 };
 
-// ACCEPT FOLLOW REQUEST
+// ACCEPT REQUEST
 export const acceptFollowRequest = async (followerId, token) => {
   return await axios.post(
     `${BASE_URL}/api/follow/accept-request`,
@@ -33,7 +30,7 @@ export const acceptFollowRequest = async (followerId, token) => {
   );
 };
 
-// REJECT FOLLOW REQUEST
+// REJECT REQUEST
 export const rejectFollowRequest = async (followerId, token) => {
   return await axios.post(
     `${BASE_URL}/api/follow/reject-request`,
@@ -45,4 +42,5 @@ export const rejectFollowRequest = async (followerId, token) => {
     }
   );
 };
+
 

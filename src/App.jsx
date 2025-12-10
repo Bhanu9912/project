@@ -10,7 +10,7 @@ const App = () => {
     <>
     <Toaster position='top-center'></Toaster>
   <div className='fixed z-9999'>
-      <MouseTrail/>
+      {/* <MouseTrail/> */}
   </div>
         <RouterProvider router={Routes}></RouterProvider>
 

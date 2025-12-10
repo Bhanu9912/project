@@ -21,6 +21,12 @@ const Login = () => {
   const dispatch = useDispatch();
   // const { loading } = useSelector((state) => state.user);
   const authState = useSelector((state) => state.auth) || {};
+  useEffect(() => {
+  if (authState.isAuthenticated) {
+    navigate("/home");
+  }
+}, [authState.isAuthenticated]);
+
   const loading = authState.loading || false;
 
 
@@ -38,8 +44,6 @@ const Login = () => {
       const result = await dispatch(loginUser(credentials)).unwrap();
 
       toast.success("Login successful!");
-
-      navigate("/home");
     } catch (err) {
       console.error("Login dispatch error:", err);
       // If axios response present, log the server response body for debugging
@@ -365,4 +369,268 @@ const Login = () => {
 export default Login;
 
 
+// import React, { useEffect, useState } from "react";
+// import { useNavigate } from "react-router-dom";
+// import toast from "react-hot-toast";
+// import { useDispatch, useSelector } from "react-redux";
+// import { loginUser } from "../../authSlice";
+// import { FiEye, FiEyeOff } from "react-icons/fi";
 
+// const Login = () => {
+//   // --------------------- STATE ---------------------
+//   const [email, setEmail] = useState("");
+//   const [password, setPassword] = useState("");
+//   const [error, setError] = useState("");
+//   const [showPassword, setShowPassword] = useState(false);
+
+//   const navigate = useNavigate();
+//   const dispatch = useDispatch();
+
+//   const authState = useSelector((state) => state.auth) || {};
+//   const loading = authState.loading || false;
+
+//   // --------------------- REDIRECT AFTER LOGIN ---------------------
+//   useEffect(() => {
+//     if (authState.isAuthenticated) {
+//       navigate("/home");
+//     }
+//   }, [authState.isAuthenticated, navigate]);
+
+//   // --------------------- LOGIN HANDLER ---------------------
+//   const handleLogin = async (e) => {
+//     e.preventDefault();
+//     setError("");
+
+//     if (!email || !password) {
+//       setError("Please fill in both fields.");
+//       return;
+//     }
+
+//     try {
+//       const credentials = { email, password };
+//       await dispatch(loginUser(credentials)).unwrap();
+//       toast.success("Login successful!");
+//     } catch (err) {
+//       const msg =
+//         err?.message || err?.response?.data?.message || "Invalid credentials.";
+//       toast.error(msg);
+//       setError(msg);
+//     }
+//   };
+
+//   // -------------------------------------------------------------
+//   // CLEAN VERSION: ALL ANIMATION CODE REMOVED FOR STABILITY
+//   // -------------------------------------------------------------
+
+//   return (
+//     <div
+//       className="
+//         w-screen h-screen 
+//         flex items-center justify-center
+//         overflow-hidden relative bg-white
+//       "
+//     >
+//       {/* RIGHT SIDE (FORM) */}
+//       <div className="w-full max-w-md bg-white py-10 px-8 shadow-lg rounded-xl border">
+//         <form onSubmit={handleLogin} className="flex flex-col gap-6">
+//           <h1 className="text-3xl font-bold text-center">Login</h1>
+
+//           {error && <p className="text-red-600 text-center">{error}</p>}
+
+//           {/* EMAIL */}
+//           <div className="relative">
+//             <label className="font-semibold">Email</label>
+//             <input
+//               type="email"
+//               value={email}
+//               onChange={(e) => setEmail(e.target.value)}
+//               className="w-full border-b outline-none pt-2 text-sm"
+//               required
+//             />
+//           </div>
+
+//           {/* PASSWORD */}
+//           <div className="relative">
+//             <label className="font-semibold">Password</label>
+
+//             <div className="relative">
+//               <input
+//                 type={showPassword ? "text" : "password"}
+//                 value={password}
+//                 onChange={(e) => setPassword(e.target.value)}
+//                 className="w-full border-b outline-none pr-10 pt-2 text-sm"
+//                 required
+//               />
+
+//               <span
+//                 onClick={() => setShowPassword((p) => !p)}
+//                 className="absolute right-1 bottom-1 cursor-pointer text-xl"
+//               >
+//                 {showPassword ? <FiEyeOff /> : <FiEye />}
+//               </span>
+//             </div>
+//           </div>
+
+//           {/* LOGIN BUTTON */}
+//           <button
+//             type="submit"
+//             disabled={loading}
+//             className="bg-black text-white rounded-lg py-2 text-lg mt-4"
+//           >
+//             {loading ? "Logging in..." : "Login"}
+//           </button>
+
+//           {/* NAVIGATE */}
+//           <p className="text-center mt-3 text-sm">
+//             Don’t have an account?{" "}
+//             <span
+//               onClick={() => navigate("/register")}
+//               className="text-blue-500 cursor-pointer underline"
+//             >
+//               Register
+//             </span>
+//           </p>
+//         </form>
+//       </div>
+//     </div>
+//   );
+// };
+
+// export default Login;
+
+
+
+
+// import React, { useState, useEffect } from "react";
+// import { useNavigate } from "react-router-dom";
+// import toast from "react-hot-toast";
+// import { useDispatch, useSelector } from "react-redux";
+// import { loginUser } from "../../authSlice";
+// import { FiEye, FiEyeOff } from "react-icons/fi";
+
+// const Login = () => {
+//   const [email, setEmail] = useState("");
+//   const [password, setPassword] = useState("");
+//   const [showPassword, setShowPassword] = useState(false);
+//   const [error, setError] = useState("");
+
+//   const navigate = useNavigate();
+//   const dispatch = useDispatch();
+//   const authState = useSelector((state) => state.auth);
+
+//   // Redirect after login
+//   useEffect(() => {
+//     if (authState.isAuthenticated) {
+//       navigate("/home");
+//     }
+//   }, [authState.isAuthenticated, navigate]);
+
+//   const loading = authState.loading;
+
+//   const handleLogin = async (e) => {
+//     e.preventDefault();
+//     setError("");
+
+//     if (!email || !password) {
+//       setError("Please fill in both fields.");
+//       return;
+//     }
+
+//     try {
+//       const credentials = { email, password };
+//       await dispatch(loginUser(credentials)).unwrap();
+
+//       toast.success("Login successful!");
+//     } catch (err) {
+//       const msg =
+//         err?.message ||
+//         err?.response?.data?.message ||
+//         "Invalid credentials.";
+
+//       toast.error(msg);
+//       setError(msg);
+//     }
+//   };
+
+//   return (
+//     <div className="w-screen h-screen flex items-center justify-center bg-white">
+//       <form
+//         onSubmit={handleLogin}
+//         className="bg-white shadow-xl rounded-2xl w-11/12 sm:w-3/4 md:w-1/3 p-6 flex flex-col gap-6"
+//       >
+//         <h1 className="text-3xl font-bold text-center">Login</h1>
+
+//         {error && <p className="text-red-600 text-center">{error}</p>}
+
+//         {/* EMAIL */}
+//         <div className="group relative">
+//           <label
+//             className={`font-semibold absolute duration-200
+//               ${email ? "-top-6 text-sm" : "top-0"}
+//             `}
+//           >
+//             Email
+//           </label>
+
+//           <input
+//             type="email"
+//             value={email}
+//             onChange={(e) => setEmail(e.target.value)}
+//             className="w-full border-b outline-none pt-2 text-base"
+//             required
+//           />
+//         </div>
+
+//         {/* PASSWORD */}
+//         <div className="group relative">
+//           <label
+//             className={`font-semibold absolute duration-200
+//               ${password ? "-top-6 text-sm" : "top-0"}
+//             `}
+//           >
+//             Password
+//           </label>
+
+//           <div className="relative">
+//             <input
+//               type={showPassword ? "text" : "password"}
+//               value={password}
+//               onChange={(e) => setPassword(e.target.value)}
+//               className="w-full border-b outline-none pr-10 pt-2 text-base"
+//               required
+//             />
+
+//             <span
+//               onClick={() => setShowPassword(!showPassword)}
+//               className="absolute right-1 bottom-0 cursor-pointer text-xl"
+//             >
+//               {showPassword ? <FiEyeOff /> : <FiEye />}
+//             </span>
+//           </div>
+//         </div>
+
+//         {/* LOGIN BUTTON */}
+//         <button
+//           type="submit"
+//           disabled={loading}
+//           className="bg-black text-white rounded-lg py-2 text-lg"
+//         >
+//           {loading ? "Logging in..." : "Login"}
+//         </button>
+
+//         {/* NAVIGATE */}
+//         <p className="text-center mt-2">
+//           Don’t have an account?{" "}
+//           <span
+//             onClick={() => navigate("/register")}
+//             className="text-blue-500 cursor-pointer underline"
+//           >
+//             Register
+//           </span>
+//         </p>
+//       </form>
+//     </div>
+//   );
+// };
+
+// export default Login;
