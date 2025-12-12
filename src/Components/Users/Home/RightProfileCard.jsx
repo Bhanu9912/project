@@ -1,3 +1,5 @@
+
+
 import React, { useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 
@@ -38,16 +40,18 @@ export default function RightProfileCard({ postsCount }) {
                 <div className="text-xs text-gray-500">Posts</div>
                 <div className="font-semibold mt-1">{postsCount}</div>
               </div>
+
               <div>
                 <div className="text-xs text-gray-500">Followers</div>
                 <div className="font-semibold mt-1">
-                  {user?.followers?.length ?? 0}
+                  {user?.user?.followers?.length ?? 0} {/* FIXED */}
                 </div>
               </div>
+
               <div>
                 <div className="text-xs text-gray-500">Following</div>
                 <div className="font-semibold mt-1">
-                  {user?.following?.length ?? 0}
+                  {user?.user?.following?.length ?? 0} {/* FIXED */}
                 </div>
               </div>
             </div>
@@ -74,5 +78,4 @@ export default function RightProfileCard({ postsCount }) {
     </>
   );
 }
-
 

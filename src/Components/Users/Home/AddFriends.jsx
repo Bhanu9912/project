@@ -28,22 +28,29 @@ export default function AddFriends() {
   const dispatch = useDispatch();
   const [usernameInput, setUsernameInput] = useState("");
 
-  /* 🔥 LOAD EXISTING FRIENDS + REQUESTS WHEN LOGGED IN */
+  /* ⭐ LOAD FRIENDS (followers + following from backend user object) */
   useEffect(() => {
     if (!authUser) return;
 
     const user = authUser.user;
 
-    const loadedFriends = (user.followers || []).map((u) => ({
+    // Build FRIENDS list
+    const loadedFriends = [
+      ...(user.followers || []),
+      ...(user.following || [])
+    ].map((u) => ({
       id: u._id,
-      name: u.username,
-      username: u.username,
+      _id: u._id,
+      name: u.username || u.email || "User",
+      username: u.username || u.email || "user",
     }));
 
+    // Build REQUESTS list
     const loadedRequests = (user.pendingRequests || []).map((u) => ({
       id: u._id,
-      name: u.username,
-      username: u.username,
+      _id: u._id,
+      name: u.username || u.email || "User",
+      username: u.username || u.email || "user",
     }));
 
     dispatch(
@@ -54,7 +61,7 @@ export default function AddFriends() {
     );
   }, [authUser, dispatch]);
 
-  /* SOCKET EVENTS */
+  /* ⭐ SOCKET.IO EVENTS */
   useEffect(() => {
     if (!authUser) return;
 
@@ -65,50 +72,45 @@ export default function AddFriends() {
 
     socket.emit("register", userId);
 
-    // Incoming follow request
+    // 🟣 When someone sends ME a follow request
     socket.on("followRequestReceived", (data) => {
       toast.success(`New follow request from @${data.from}`);
 
       dispatch(
         addRequest({
           id: data.fromId,
+          _id: data.fromId,
           name: data.from,
           username: data.from,
         })
       );
 
-      dispatch(addNotification(`New follow request from @${data.from}`));
+      dispatch(addNotification(`@${data.from} sent you a follow request`));
     });
 
-    // Someone ACCEPTED my request
+    // 🟣 When someone ACCEPTS my request
     socket.on("followRequestAccepted", (data) => {
       toast.success(`${data.by} accepted your request`);
-
-      dispatch(addNotification(`${data.by} accepted your request`));
 
       dispatch(
         addFriend({
           id: data.byId,
+          _id: data.byId,
           name: data.by,
           username: data.by,
         })
       );
-    });
 
-    // Someone REJECTED my request
-    socket.on("followRequestRejected", (data) => {
-      toast.error(`${data.by} rejected your request`);
-      dispatch(addNotification(`${data.by} rejected your request`));
+      dispatch(addNotification(`@${data.by} accepted your follow request`));
     });
 
     return () => {
       socket.off("followRequestReceived");
       socket.off("followRequestAccepted");
-      socket.off("followRequestRejected");
     };
   }, [authUser, dispatch]);
 
-  /* SEND FOLLOW REQUEST */
+  /* ⭐ SEND REQUEST */
   const handleSend = async () => {
     if (!usernameInput.trim()) {
       toast.error("Enter a username");
@@ -117,38 +119,23 @@ export default function AddFriends() {
 
     try {
       const token = authUser?.token || authUser?.user?.token;
-
       await sendFollowRequest(usernameInput, token);
 
       toast.success(`Request sent to @${usernameInput}`);
-      dispatch(addNotification(`You sent a follow request to @${usernameInput}`));
-
       setUsernameInput("");
     } catch (error) {
-      toast.error(error?.response?.data?.message || "Failed to send request");
+      toast.error(error?.response?.data?.message || "Error");
     }
   };
 
-  /* ACCEPT REQUEST */
+  /* ⭐ ACCEPT REQUEST */
   const handleAccept = (id) => {
-    dispatch(acceptFollowRequest(id))
-      .unwrap()
-      .then(() => {
-        toast.success("Request accepted");
-        dispatch(addNotification("You accepted a friend request"));
-      })
-      .catch(() => toast.error("Failed to accept"));
+    dispatch(acceptFollowRequest(id));
   };
 
-  /* DECLINE */
+  /* ⭐ REJECT REQUEST */
   const handleDecline = (id) => {
-    dispatch(rejectFollowRequest(id))
-      .unwrap()
-      .then(() => {
-        toast("Request declined");
-        dispatch(addNotification("You rejected a friend request"));
-      })
-      .catch(() => toast.error("Failed to decline"));
+    dispatch(rejectFollowRequest(id));
   };
 
   return (
@@ -158,7 +145,7 @@ export default function AddFriends() {
       <div className="flex-1 p-10">
         <h1 className="text-3xl font-bold mb-6">Add Friends</h1>
 
-        {/* SEND REQUEST INPUT */}
+        {/* SEARCH USER */}
         <div className="flex gap-3 mb-10">
           <input
             className="border p-2 rounded-full w-64"
@@ -169,7 +156,7 @@ export default function AddFriends() {
 
           <button
             onClick={handleSend}
-            className="px-6 py-2 rounded-full bg-purple-600 text-white hover:bg-purple-700"
+            className="px-6 py-2 rounded-full bg-purple-600 text-white"
           >
             Send Request
           </button>
@@ -179,75 +166,44 @@ export default function AddFriends() {
         <h2 className="text-xl font-semibold mb-4">Friend Requests</h2>
 
         {requests.length === 0 ? (
-          <p className="text-gray-500">No friend requests yet.</p>
+          <p className="text-gray-500">No friend requests</p>
         ) : (
-          <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-6 mb-10">
-            {requests.map((req) => (
-              <div
-                key={req.id}
-                className="bg-white rounded-xl border shadow p-5 flex flex-col gap-4"
+          requests.map((req) => (
+            <div key={req.id} className="bg-white border rounded p-3 mb-3">
+              <div className="font-semibold">{req.name}</div>
+              <div className="text-xs">@{req.username}</div>
+
+              <button
+                onClick={() => handleAccept(req.id)}
+                className="bg-purple-600 text-white px-3 py-1 rounded mt-2"
               >
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 bg-gray-300 rounded-full flex items-center justify-center text-white text-xl font-bold">
-                    {req.name.charAt(0).toUpperCase()}
-                  </div>
+                Accept
+              </button>
 
-                  <div>
-                    <div className="font-semibold">{req.name}</div>
-                    <div className="text-xs text-gray-500">@{req.username}</div>
-                  </div>
-                </div>
-
-                <div className="flex gap-3 mt-3">
-                  <button
-                    onClick={() => handleAccept(req.id)}
-                    className="px-4 py-2 bg-purple-600 text-white rounded-full hover:bg-purple-700"
-                  >
-                    Accept
-                  </button>
-
-                  <button
-                    onClick={() => handleDecline(req.id)}
-                    className="px-4 py-2 bg-gray-200 text-gray-700 rounded-full hover:bg-gray-300"
-                  >
-                    Decline
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
+              <button
+                onClick={() => handleDecline(req.id)}
+                className="bg-gray-200 text-gray-700 px-3 py-1 rounded mt-2 ml-3"
+              >
+                Decline
+              </button>
+            </div>
+          ))
         )}
 
-        {/* FRIENDS LIST */}
+        {/* FRIEND LIST */}
         <h2 className="text-xl font-semibold mb-4">Your Friends</h2>
 
         {friends.length === 0 ? (
-          <p className="text-gray-500">No friends yet.</p>
+          <p className="text-gray-500">No friends yet</p>
         ) : (
-          <div className="grid md:grid-cols-2 xl:grid-cols-3 gap-6">
-            {friends.map((fr) => (
-              <div
-                key={fr.id}
-                className="bg-white rounded-xl border shadow p-5 flex flex-col gap-3"
-              >
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-purple-500 rounded-full flex items-center justify-center text-white font-bold">
-                    {fr.name.charAt(0).toUpperCase()}
-                  </div>
-
-                  <div>
-                    <div className="font-semibold">{fr.name}</div>
-                    <div className="text-xs text-gray-500">@{fr.username}</div>
-                  </div>
-                </div>
-
-                {/* Add buttons like View Profile / Remove later */}
-              </div>
-            ))}
-          </div>
+          friends.map((fr) => (
+            <div key={fr._id} className="bg-white border rounded p-3 mb-3">
+              <div className="font-semibold">{fr.name}</div>
+              <div className="text-xs">@{fr.username}</div>
+            </div>
+          ))
         )}
       </div>
     </div>
   );
 }
-

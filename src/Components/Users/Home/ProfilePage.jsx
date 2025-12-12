@@ -1,7 +1,5 @@
 
 
-
-
 import React, { useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import Navbar from "./Navbar";
@@ -9,10 +7,31 @@ import { getAllBlogs, toggleLike, addComment } from "../../../BlogSlice";
 import { FiHeart, FiMessageCircle } from "react-icons/fi";
 import RightProfileCard from "./RightProfileCard";
 
+// ⭐ TIME AGO FORMATTER
+function timeAgo(date) {
+  if (!date) return "";
+
+  const now = new Date();
+  const past = new Date(date);
+  const diff = (now - past) / 1000; // seconds difference
+
+  if (diff < 60) return "Just now";
+  if (diff < 3600) return `${Math.floor(diff / 60)} min ago`;
+  if (diff < 86400) return `${Math.floor(diff / 3600)} hours ago`;
+
+  const days = Math.floor(diff / 86400);
+  if (days === 1) return "Yesterday";
+  if (days < 30) return `${days} days ago`;
+
+  const months = Math.floor(days / 30);
+  if (months < 12) return `${months} months ago`;
+
+  const years = Math.floor(months / 12);
+  return `${years} years ago`;
+}
+
 export default function ProfilePage() {
   const dispatch = useDispatch();
-
-  // AUTH USER → may be { user:{...}, token } OR user object
   const authUser = useSelector((state) => state.auth.user);
   const me = authUser?.user ? authUser.user : authUser || {};
   const myId = me?._id || "";
@@ -22,35 +41,30 @@ export default function ProfilePage() {
   const [openPost, setOpenPost] = useState(null);
   const [commentText, setCommentText] = useState("");
 
+  // ⭐ Track opened comments for "see more"
+  const [showMoreFor, setShowMoreFor] = useState({});
+
   useEffect(() => {
     dispatch(getAllBlogs());
   }, [dispatch]);
 
-  // ✅ FILTER POSTS BELONGING TO LOGGED-IN USER
-  const userBlogs =
-    blogs.filter((b) => b?.user?._id === myId) || [];
-
-  // Count My Posts
+  // ⭐ FILTER ONLY USER POSTS
+  const userBlogs = blogs.filter((b) => b?.user?._id === myId) || [];
   const userPostsCount = userBlogs.length;
 
-  // Like Handler
   const handleLike = (id) => dispatch(toggleLike(id));
 
-  // Comment Handler
   const handleSubmitComment = (blogId) => {
     if (!commentText.trim()) return;
     dispatch(addComment({ articleId: blogId, comment: commentText }));
     setCommentText("");
   };
 
-  // Toggle Comments
   const toggleComments = (id) =>
     setOpenPost((prev) => (prev === id ? null : id));
 
-  // Author Name (my profile only)
   const getAuthorName = () => me?.username || "Unknown User";
 
-  // Avatar (my profile only)
   const getAvatar = () => (
     <img
       src={
@@ -62,7 +76,7 @@ export default function ProfilePage() {
       className="w-12 h-12 rounded-full object-cover shadow"
     />
   );
-  // console.log("authUser:", authUser);
+  console.log("auth user in profile page:", authUser);
 
   return (
     <div className="flex">
@@ -74,12 +88,12 @@ export default function ProfilePage() {
         {loading && <p>Loading blogs...</p>}
 
         <div className="space-y-6">
-          {/* IF NO POSTS */}
           {userBlogs.length === 0 && (
-            <p className="text-gray-500 text-lg">You haven't posted anything yet.</p>
+            <p className="text-gray-500 text-lg">
+              You haven't posted anything yet.
+            </p>
           )}
 
-          {/* SHOW ONLY MY POSTS */}
           {userBlogs.map((blog) => {
             const isLiked = blog.likes?.includes(myId);
 
@@ -97,10 +111,18 @@ export default function ProfilePage() {
                   </div>
                 </div>
 
-                {/* BLOG TITLE */}
-                <h3 className="text-xl font-bold text-gray-900 mb-2">
-                  {blog.title}
-                </h3>
+                {/* ⭐ BLOG HEADER */}
+                <div className="flex items-start justify-between">
+                  <h3 className="text-xl font-bold text-gray-900 mb-1">
+                    {blog.title}
+                  </h3>
+
+                  <div className="ml-4 flex-shrink-0">
+                    <p className="text-xs text-gray-400">
+                      {timeAgo(blog.createdAt)}
+                    </p>
+                  </div>
+                </div>
 
                 {/* BLOG CONTENT */}
                 <p className="text-gray-600 mb-4 whitespace-pre-wrap">
@@ -112,10 +134,14 @@ export default function ProfilePage() {
                   <button
                     onClick={() => handleLike(blog._id)}
                     className={`flex items-center gap-2 text-lg ${
-                      isLiked ? "text-red-500" : "text-gray-600 hover:text-red-500"
+                      isLiked
+                        ? "text-red-500"
+                        : "text-gray-600 hover:text-red-500"
                     }`}
                   >
-                    <FiHeart className={isLiked ? "fill-red-500 text-red-500" : ""} />
+                    <FiHeart
+                      className={isLiked ? "fill-red-500 text-red-500" : ""}
+                    />
                     <span>{blog.likes?.length || 0}</span>
                   </button>
 
@@ -128,7 +154,7 @@ export default function ProfilePage() {
                   </button>
                 </div>
 
-                {/* COMMENTS SECTION */}
+                {/* ⭐ COMMENTS SECTION */}
                 {openPost === blog._id && (
                   <div className="mt-5 bg-gray-50 p-4 rounded-xl border space-y-4">
                     {/* COMMENT INPUT */}
@@ -147,25 +173,72 @@ export default function ProfilePage() {
                       </button>
                     </div>
 
-                    {/* COMMENT LIST */}
+                    {/* ⭐ COMMENT LIST + SHOW MORE */}
                     <div className="space-y-3">
-                      {blog.comments?.length ? (
-                        blog.comments.map((c, i) => (
-                          <div
-                            key={i}
-                            className="bg-white border p-3 rounded-lg text-sm"
-                          >
-                            <b className="text-gray-800">
-                              {c.username || me.username}:
-                            </b>{" "}
-                            <span>{c.text}</span>
-                          </div>
-                        ))
-                      ) : (
-                        <p className="text-gray-400 text-sm">
-                          No comments yet.
-                        </p>
-                      )}
+                      {(() => {
+                        if (!blog.comments?.length) {
+                          return (
+                            <p className="text-gray-400 text-sm">
+                              No comments yet.
+                            </p>
+                          );
+                        }
+
+                        // NEWEST FIRST
+                        const sorted = [...blog.comments].sort(
+                          (a, b) =>
+                            new Date(b.createdAt) - new Date(a.createdAt)
+                        );
+
+                        const showAll = showMoreFor[blog._id];
+                        const visible = showAll
+                          ? sorted
+                          : sorted.slice(0, 3);
+
+                        return (
+                          <>
+                            {visible.map((c, i) => (
+                              <div
+                                key={i}
+                                className="bg-white border p-3 rounded-lg text-sm flex flex-col gap-1"
+                              >
+                                <div className="flex items-center justify-between">
+                                  <b className="text-gray-800">
+                                    {c.username || me.username}
+                                  </b>
+
+                                  {/* TIME AGO */}
+                                  <span className="text-[10px] text-gray-400">
+                                    {timeAgo(c.createdAt)}
+                                  </span>
+                                </div>
+
+                                <span className="text-gray-700">
+                                  {c.text}
+                                </span>
+                              </div>
+                            ))}
+
+                            {/* SEE MORE / SEE LESS BUTTON */}
+                            {sorted.length > 3 && (
+                              <button
+                                onClick={() =>
+                                  setShowMoreFor({
+                                    ...showMoreFor,
+                                    [blog._id]:
+                                      !showMoreFor[blog._id],
+                                  })
+                                }
+                                className="text-blue-600 text-xs mt-1 hover:underline"
+                              >
+                                {showMoreFor[blog._id]
+                                  ? "See less"
+                                  : `See more (${sorted.length - 3})`}
+                              </button>
+                            )}
+                          </>
+                        );
+                      })()}
                     </div>
                   </div>
                 )}
@@ -175,7 +248,6 @@ export default function ProfilePage() {
         </div>
       </main>
 
-      {/* RIGHT SIDEBAR */}
       <RightProfileCard postsCount={userPostsCount} />
     </div>
   );
