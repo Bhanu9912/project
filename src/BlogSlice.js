@@ -1,4 +1,5 @@
 
+
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
 
@@ -119,13 +120,24 @@ const blogSlice = createSlice({
         state.error = action.payload;
       })
 
-      /* CREATE BLOG */
+      /* CREATE BLOG — FIXED ✔ */
       .addCase(createBlog.fulfilled, (state, action) => {
+        const payload = action.payload;
+
         const newBlog = {
-          ...action.payload,
-          likes: [],
-          comments: []
+          ...payload,
+
+          // FIX: convert returned user string ID → {_id:""}
+          user:
+            typeof payload.user === "string"
+              ? { _id: payload.user }
+              : payload.user,
+
+          likes: Array.isArray(payload.likes) ? payload.likes : [],
+          comments: Array.isArray(payload.comments) ? payload.comments : []
         };
+
+        // add new post to top of UI
         state.blogs.unshift(newBlog);
       })
 
@@ -146,7 +158,6 @@ const blogSlice = createSlice({
 
       /* ADD COMMENT */
       .addCase(addComment.fulfilled, (state, action) => {
-        // FIX: backend returns { message, article }
         const updated = action.payload.article;
 
         state.blogs = state.blogs.map((b) =>
