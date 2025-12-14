@@ -1,3 +1,6 @@
+
+
+
 import React, { useState, useEffect } from "react";
 import Navbar from "./Navbar";
 import CreateBlogModal from "./CreateBlogModal";
@@ -11,7 +14,10 @@ export default function Home() {
 
   const { user, isAuthenticated } = useSelector((state) => state.auth);
   const blogs = useSelector((state) => state.blogs.blogs);
-  const friends = useSelector((state) => state.friends.friends);
+
+  // ⭐ FIX: USE AUTH USER (NOT friendsSlice)
+  const authUser = useSelector((state) => state.auth.user);
+  const me = authUser?.user || {};
 
   // Fetch blogs AFTER login
   useEffect(() => {
@@ -20,10 +26,13 @@ export default function Home() {
     }
   }, [isAuthenticated, dispatch]);
 
-  // ⭐ ONLY FRIEND IDs (NOT your ID)
-  const friendIds = friends.map((f) => f._id);
+  // ⭐ FIX: FOLLOWERS + FOLLOWING IDS
+  const friendIds = [
+    ...(me.followers || []),
+    ...(me.following || []),
+  ].map((u) => u._id);
 
-  // ⭐ Show blogs only from friends
+  // ⭐ Show blogs only from followers / following
   const visibleBlogs = blogs.filter((b) => {
     const authorId = b.user?._id || b.user;
     return friendIds.includes(authorId);
@@ -73,11 +82,15 @@ export default function Home() {
 
           {/* BLOG FEED */}
           <section className="flex flex-col gap-4">
-            <h2 className="text-xl font-semibold">Latest from your network</h2>
+            <h2 className="text-xl font-semibold">
+              Latest from your network
+            </h2>
 
             <div className="flex flex-col gap-4">
               {visibleBlogs.length === 0 ? (
-                <p className="text-gray-500">No posts from your friends yet.</p>
+                <p className="text-gray-500">
+                  No posts from your friends yet.
+                </p>
               ) : (
                 visibleBlogs.map((blog) => (
                   <BlogCard key={blog._id} blog={blog} />
