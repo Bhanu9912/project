@@ -7,7 +7,6 @@
 
 // const BASE_URL = "https://robo-zv8u.onrender.com";
 
-
 // const initialState = {
 //   user: null,
 //   loading: false,
@@ -15,8 +14,7 @@
 //   isAuthenticated: false,
 // };
 
-// // ======================== REGISTER ========================
-
+// // REGISTER
 // export const registerUser = createAsyncThunk(
 //   "auth/registerUser",
 //   async (payload, { rejectWithValue }) => {
@@ -26,7 +24,6 @@
 //         payload,
 //         { headers: { "Content-Type": "multipart/form-data" } }
 //       );
-
 //       return data;
 //     } catch (err) {
 //       return rejectWithValue(
@@ -36,8 +33,7 @@
 //   }
 // );
 
-// // ========================== LOGIN =========================
-
+// // LOGIN
 // export const loginUser = createAsyncThunk(
 //   "auth/loginUser",
 //   async (payload, { rejectWithValue }) => {
@@ -46,12 +42,7 @@
 //         `${BASE_URL}/api/users/login`,
 //         payload
 //       );
-
-//       // REMOVE BASE64 if backend sends it
-//       const cleaned = { ...data };
-
-
-//       return cleaned; // NO LOCALSTORAGE
+//       return data;
 //     } catch (err) {
 //       return rejectWithValue(
 //         err.response?.data || { message: "Login failed" }
@@ -60,13 +51,10 @@
 //   }
 // );
 
-// // ========================== LOGOUT ========================
-
+// // LOGOUT
 // export const logoutUser = createAsyncThunk("auth/logoutUser", async () => {
-//   return null; // NO LOCALSTORAGE REMOVE
+//   return null;
 // });
-
-// // ========================== SLICE =========================
 
 // const authSlice = createSlice({
 //   name: "auth",
@@ -75,7 +63,47 @@
 //   reducers: {
 //     updateProfile: (state, action) => {
 //       state.user = { ...state.user, ...action.payload };
-//       // NO saving to localStorage anymore
+//     },
+
+//     // update followers list (EXISTING)
+//     updateFollowers: (state, action) => {
+//       if (state.user?.user) {
+//         state.user.user.followers = action.payload;
+//       }
+//     },
+
+//     // update following list (EXISTING)
+//     updateFollowing: (state, action) => {
+//       if (state.user?.user) {
+//         state.user.user.following = action.payload;
+//       }
+//     },
+
+//     // ⭐ NEW: LIVE FOLLOW / UNFOLLOW SYNC
+//     updateFollowersFollowing: (state, action) => {
+//       if (!state.user?.user) return;
+
+//       const { type, userId } = action.payload;
+
+//       if (type === "ADD_FOLLOWER") {
+//         state.user.user.followers.push({ _id: userId });
+//       }
+
+//       if (type === "ADD_FOLLOWING") {
+//         state.user.user.following.push({ _id: userId });
+//       }
+
+//       if (type === "REMOVE_FOLLOWER") {
+//         state.user.user.followers = state.user.user.followers.filter(
+//           (u) => u._id !== userId
+//         );
+//       }
+
+//       if (type === "REMOVE_FOLLOWING") {
+//         state.user.user.following = state.user.user.following.filter(
+//           (u) => u._id !== userId
+//         );
+//       }
 //     },
 //   },
 
@@ -100,9 +128,8 @@
 //       })
 //       .addCase(loginUser.fulfilled, (state, action) => {
 //         state.loading = false;
-//         state.user = action.payload; 
+//         state.user = action.payload;
 //         state.isAuthenticated = true;
-//         state.error = null;
 //       })
 //       .addCase(loginUser.rejected, (state, action) => {
 //         state.loading = false;
@@ -113,12 +140,17 @@
 //       .addCase(logoutUser.fulfilled, (state) => {
 //         state.user = null;
 //         state.isAuthenticated = false;
-//         state.error = null;
 //       });
 //   },
 // });
 
-// export const { updateProfile } = authSlice.actions;
+// export const {
+//   updateProfile,
+//   updateFollowers,
+//   updateFollowing,
+//   updateFollowersFollowing, // ⭐ NEW EXPORT
+// } = authSlice.actions;
+
 // export default authSlice.reducer;
 
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
@@ -145,7 +177,9 @@ export const registerUser = createAsyncThunk(
       );
       return data;
     } catch (err) {
-      return rejectWithValue(err.response?.data || { message: "Registration failed" });
+      return rejectWithValue(
+        err.response?.data || { message: "Registration failed" }
+      );
     }
   }
 );
@@ -155,10 +189,15 @@ export const loginUser = createAsyncThunk(
   "auth/loginUser",
   async (payload, { rejectWithValue }) => {
     try {
-      const { data } = await axios.post(`${BASE_URL}/api/users/login`, payload);
+      const { data } = await axios.post(
+        `${BASE_URL}/api/users/login`,
+        payload
+      );
       return data;
     } catch (err) {
-      return rejectWithValue(err.response?.data || { message: "Login failed" });
+      return rejectWithValue(
+        err.response?.data || { message: "Login failed" }
+      );
     }
   }
 );
@@ -177,23 +216,48 @@ const authSlice = createSlice({
       state.user = { ...state.user, ...action.payload };
     },
 
-    // ⭐ NEW: update followers list
     updateFollowers: (state, action) => {
       if (state.user?.user) {
         state.user.user.followers = action.payload;
       }
     },
 
-    // ⭐ NEW: update following list
     updateFollowing: (state, action) => {
       if (state.user?.user) {
         state.user.user.following = action.payload;
+      }
+    },
+
+    updateFollowersFollowing: (state, action) => {
+      if (!state.user?.user) return;
+
+      const { type, userId } = action.payload;
+
+      if (type === "ADD_FOLLOWER") {
+        state.user.user.followers.push({ _id: userId });
+      }
+
+      if (type === "ADD_FOLLOWING") {
+        state.user.user.following.push({ _id: userId });
+      }
+
+      if (type === "REMOVE_FOLLOWER") {
+        state.user.user.followers = state.user.user.followers.filter(
+          (u) => u._id !== userId
+        );
+      }
+
+      if (type === "REMOVE_FOLLOWING") {
+        state.user.user.following = state.user.user.following.filter(
+          (u) => u._id !== userId
+        );
       }
     },
   },
 
   extraReducers: (builder) => {
     builder
+      // REGISTER
       .addCase(registerUser.pending, (state) => {
         state.loading = true;
       })
@@ -206,13 +270,25 @@ const authSlice = createSlice({
         state.error = action.payload?.message;
       })
 
-      // LOGIN
+      // LOGIN (⭐ FIXED HERE ONLY)
       .addCase(loginUser.pending, (state) => {
         state.loading = true;
       })
       .addCase(loginUser.fulfilled, (state, action) => {
         state.loading = false;
-        state.user = action.payload;
+
+        state.user = {
+          ...action.payload,
+          user: {
+            ...action.payload.user,
+            followers: [...(action.payload.user?.followers || [])],
+            following: [...(action.payload.user?.following || [])],
+            profilePhoto: action.payload.user?.profilePhoto
+              ? `${action.payload.user.profilePhoto}`
+              : null,
+          },
+        };
+
         state.isAuthenticated = true;
       })
       .addCase(loginUser.rejected, (state, action) => {
@@ -232,7 +308,7 @@ export const {
   updateProfile,
   updateFollowers,
   updateFollowing,
+  updateFollowersFollowing,
 } = authSlice.actions;
 
 export default authSlice.reducer;
-

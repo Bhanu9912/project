@@ -4,7 +4,9 @@ import React, { useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 
 // import { updateProfile } from "../../authSlice";
-import { updateProfile } from "../../../authSlice";
+// import { updateProfile } from "../../../authSlice";
+import EditProfileModal from "./EditProfileModal";
+
 
 export default function RightProfileCard({ postsCount }) {
   const user = useSelector((state) => state.auth.user);
