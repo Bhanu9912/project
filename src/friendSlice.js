@@ -1,13 +1,13 @@
 
 
 
+
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import {
   acceptFollowRequest as acceptAPI,
   rejectFollowRequest as rejectAPI,
 } from "./followService";
 
-// ACCEPT REQUEST
 export const acceptFollowRequest = createAsyncThunk(
   "friends/acceptFollowRequest",
   async (id, thunkAPI) => {
@@ -17,7 +17,6 @@ export const acceptFollowRequest = createAsyncThunk(
   }
 );
 
-// REJECT REQUEST
 export const rejectFollowRequest = createAsyncThunk(
   "friends/rejectFollowRequest",
   async (id, thunkAPI) => {
@@ -33,7 +32,7 @@ const friendSlice = createSlice({
     requests: [],
     friends: [],
     notifications: [],
-    initialized: false, // ⭐ ADDED
+    initialized: false,
   },
 
   reducers: {
@@ -55,13 +54,13 @@ const friendSlice = createSlice({
     },
 
     setInitialFriends: (state, action) => {
-      if (state.initialized) return; // ⭐ ADDED (important fix)
+      if (state.initialized) return;
       state.friends = action.payload.friends;
       state.requests = action.payload.requests;
-      state.initialized = true; // ⭐ ADDED
+      state.initialized = true;
     },
 
-    resetFriends: () => ({ // ⭐ ADDED (logout fix)
+    resetFriends: () => ({
       requests: [],
       friends: [],
       notifications: [],
@@ -74,11 +73,9 @@ const friendSlice = createSlice({
       .addCase(acceptFollowRequest.fulfilled, (state, action) => {
         const id = action.payload;
         const req = state.requests.find((r) => r.id === id);
-
-        if (req) state.friends.push(req); // ⭐ ENSURE ADD
+        if (req) state.friends.push(req);
         state.requests = state.requests.filter((r) => r.id !== id);
       })
-
       .addCase(rejectFollowRequest.fulfilled, (state, action) => {
         const id = action.payload;
         state.requests = state.requests.filter((r) => r.id !== id);
@@ -91,7 +88,8 @@ export const {
   addNotification,
   addFriend,
   setInitialFriends,
-  resetFriends, // ⭐ ADDED
+  resetFriends,
 } = friendSlice.actions;
 
 export default friendSlice.reducer;
+
