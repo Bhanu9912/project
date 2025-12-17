@@ -14,6 +14,8 @@ import {
 
 import { useDispatch, useSelector } from "react-redux";
 import { createBlog } from "../../../BlogSlice";
+import { socket } from "../../../socket";
+import { addNotification } from "../../../friendSlice";
 import CreateBlogModal from "./CreateBlogModal";
 
 export default function Navbar() {
@@ -32,15 +34,40 @@ export default function Navbar() {
   const notifications = useSelector((state) => state.friends.notifications);
   const notificationCount = notifications.length;
 
-  // ⭐ FIXED: Profile route restored
+  // ⭐ ACTIVE ROUTE
   useEffect(() => {
     const p = location.pathname || "/";
-
     if (p.startsWith("/home")) setActive("Home");
     else if (p.startsWith("/addfriends")) setActive("Add Friends");
     else if (p.startsWith("/settings")) setActive("Settings");
-    else if (p.startsWith("/profile")) setActive("Profile"); // ⭐ RESTORED
+    else if (p.startsWith("/profile")) setActive("Profile");
   }, [location.pathname]);
+
+  // 🔔 SOCKET LISTENERS (ONLY ADDITION)
+  useEffect(() => {
+    if (!user?._id) return;
+
+    socket.emit("register", user._id);
+
+    socket.on("articleLiked", (data) => {
+      if (data.ownerId === user._id) {
+        dispatch(
+          addNotification(`❤️ Your post was liked by ${data.likedBy}`)
+        );
+      }
+    });
+
+    socket.on("newComment", (data) => {
+      if (data.ownerId === user._id) {
+        dispatch(addNotification("💬 New comment on your post"));
+      }
+    });
+
+    return () => {
+      socket.off("articleLiked");
+      socket.off("newComment");
+    };
+  }, [user?._id, dispatch]);
 
   const menuItems = [
     { label: "Home", icon: <FiHome size={24} />, route: "/home" },
@@ -66,7 +93,6 @@ export default function Navbar() {
     <>
       {/* DESKTOP SIDEBAR */}
       <div className="hidden md:flex w-64 h-screen border-r px-6 py-8 flex-col space-y-8 bg-white">
-        
         {/* LOGO */}
         <div className="flex items-center gap-3">
           <div className="w-12 h-12 rounded-full bg-purple-600 text-white flex items-center justify-center text-xl font-bold">
@@ -95,62 +121,38 @@ export default function Navbar() {
 
           <button
             onClick={() => navigate("/profile")}
-            className={`mt-3 px-4 py-2 rounded-lg font-semibold text-sm transition ${
+            className={`mt-3 px-4 py-2 rounded-lg font-semibold text-sm ${
               active === "Profile"
                 ? "bg-purple-200 text-purple-700"
-                : "bg-purple-700 text-white hover:bg-purple-800"
+                : "bg-purple-700 text-white"
             }`}
           >
             My Profile
           </button>
         </div>
 
-        {/* NAVIGATION MENU */}
+        {/* MENU */}
         <div className="space-y-3 mt-5">
           {menuItems.map((item) => (
             <button
               key={item.label}
               onClick={() => handleClick(item)}
-              className={`relative flex items-center gap-3 text-lg font-semibold w-full px-4 py-2 rounded-lg transition ${
+              className={`relative flex items-center gap-3 text-lg font-semibold w-full px-4 py-2 rounded-lg ${
                 active === item.label
                   ? "bg-purple-100 text-purple-700"
                   : "text-black hover:bg-gray-100"
               }`}
             >
-              {/* NOTIFICATION BADGE */}
               {item.label === "Notifications" && notificationCount > 0 && (
                 <span className="absolute right-4 top-2 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center">
                   {notificationCount}
                 </span>
               )}
-
               {item.icon}
               {item.label}
             </button>
           ))}
         </div>
-      </div>
-
-      {/* MOBILE NAV BAR */}
-      <div className="md:hidden fixed bottom-0 left-0 w-full bg-white shadow-lg border-t py-2 flex justify-around z-50">
-        {menuItems.map((item) => (
-          <button
-            key={item.label}
-            onClick={() => handleClick(item)}
-            className={`relative flex flex-col items-center text-xs ${
-              active === item.label ? "text-purple-600" : "text-gray-600"
-            }`}
-          >
-            {item.icon}
-            {item.label}
-
-            {item.label === "Notifications" && notificationCount > 0 && (
-              <span className="absolute top-0 right-5 w-4 h-4 bg-red-500 text-white text-[10px] rounded-full flex items-center justify-center">
-                {notificationCount}
-              </span>
-            )}
-          </button>
-        ))}
       </div>
 
       {/* CREATE BLOG MODAL */}
@@ -162,30 +164,26 @@ export default function Navbar() {
 
       {/* NOTIFICATION PANEL */}
       {showNotifications && (
-        <div className="fixed top-0 left-0 w-full h-full bg-black/40 flex justify-start z-50">
-          <div className="w-80 h-full bg-white p-5 overflow-y-auto shadow-xl">
+        <div className="fixed top-0 left-0 w-full h-full bg-black/40 z-50">
+          <div className="w-80 h-full bg-white p-5 overflow-y-auto">
             <h2 className="text-xl font-semibold mb-4">Notifications</h2>
 
             {notifications.length === 0 ? (
-              <p className="text-gray-500">No notifications yet</p>
+              <p>No notifications yet</p>
             ) : (
-              <div className="space-y-3">
-                {notifications.map((note, i) => (
-                  <div key={i} className="p-3 bg-gray-100 rounded-lg text-sm">
-                    <div>{note.msg}</div>
-
-                    {/* ⭐ Added notification time */}
-                    <div className="text-[10px] text-gray-400 mt-1">
-                      {new Date(note.time).toLocaleString()}
-                    </div>
+              notifications.map((n, i) => (
+                <div key={i} className="p-3 bg-gray-100 rounded mb-2">
+                  <div>{n.msg}</div>
+                  <div className="text-xs text-gray-400">
+                    {new Date(n.time).toLocaleString()}
                   </div>
-                ))}
-              </div>
+                </div>
+              ))
             )}
 
             <button
               onClick={() => setShowNotifications(false)}
-              className="mt-4 w-full py-2 bg-purple-600 text-white rounded-lg"
+              className="mt-4 w-full py-2 bg-purple-600 text-white rounded"
             >
               Close
             </button>
@@ -195,3 +193,4 @@ export default function Navbar() {
     </>
   );
 }
+

@@ -1,17 +1,11 @@
 
 
-
 import React, { useState, useEffect } from "react";
 import Navbar from "./Navbar";
 import { useSelector, useDispatch } from "react-redux";
 import toast from "react-hot-toast";
 
-import { socket } from "../../../socket";
-
 import {
-  addRequest,
-  addNotification,
-  addFriend,
   setInitialFriends,
   acceptFollowRequest,
   rejectFollowRequest,
@@ -25,44 +19,40 @@ export default function AddFriends() {
   const friends = useSelector((state) => state.friends.friends);
 
   const dispatch = useDispatch();
-  const [usernameInput, setUsernameInput] = useState("");
 
-  // ⭐ UI STATES
+  const [usernameInput, setUsernameInput] = useState("");
   const [activeTab, setActiveTab] = useState("followers");
   const [isSending, setIsSending] = useState(false);
 
-  // ⭐ FOLLOWERS & FOLLOWING
-  const [followers, setFollowers] = useState([]);
-  const [following, setFollowing] = useState([]);
+  /* ================================
+     DERIVED DATA (NO LOCAL STATE)
+  ================================= */
+  const user = authUser?.user;
 
-  /* ⭐ LOAD FRIENDS (ONLY ONCE) */
+  const followers =
+    (user?.followers || []).map((u) => ({
+      id: u._id,
+      _id: u._id,
+      name: u.username || u.email || "User",
+      username: u.username || u.email || "user",
+      profilePhoto: u.profilePhoto || null,
+    }));
+
+  const following =
+    (user?.following || []).map((u) => ({
+      id: u._id,
+      _id: u._id,
+      name: u.username || u.email || "User",
+      username: u.username || u.email || "user",
+      profilePhoto: u.profilePhoto || null,
+    }));
+
+  /* ================================
+     INITIAL REQUESTS LOAD (ON LOGIN)
+  ================================= */
   useEffect(() => {
-    if (!authUser) return;
+    if (!user) return;
 
-    const user = authUser.user;
-
-    // ⭐ FOLLOWERS
-    const loadedFollowers = (user.followers || []).map((u) => ({
-      id: u._id,
-      _id: u._id,
-      name: u.username || u.email || "User",
-      username: u.username || u.email || "user",
-      profilePhoto: u.profilePhoto || null,
-    }));
-
-    // ⭐ FOLLOWING
-    const loadedFollowing = (user.following || []).map((u) => ({
-      id: u._id,
-      _id: u._id,
-      name: u.username || u.email || "User",
-      username: u.username || u.email || "user",
-      profilePhoto: u.profilePhoto || null,
-    }));
-
-    setFollowers(loadedFollowers);
-    setFollowing(loadedFollowing);
-
-    // ⭐ REQUESTS
     const loadedRequests = (user.pendingRequests || []).map((u) => ({
       id: u._id,
       _id: u._id,
@@ -73,59 +63,15 @@ export default function AddFriends() {
 
     dispatch(
       setInitialFriends({
-        friends: friends,
+        friends,
         requests: loadedRequests,
       })
     );
-  }, [authUser, dispatch]);
+  }, [user, dispatch]);
 
-  /* ⭐ SOCKET EVENTS */
-  useEffect(() => {
-    if (!authUser) return;
-
-    const userId = authUser?.user?._id;
-    if (!userId) return;
-
-    socket.connect();
-    socket.emit("register", userId);
-
-    socket.on("followRequestReceived", (data) => {
-      dispatch(
-        addRequest({
-          id: data.fromId,
-          _id: data.fromId,
-          name: data.from,
-          username: data.from,
-        })
-      );
-      dispatch(addNotification(`@${data.from} sent you a follow request`));
-    });
-
-    socket.on("followRequestAccepted", (data) => {
-      dispatch(
-        addFriend({
-          id: data.byId,
-          _id: data.byId,
-          name: data.by,
-          username: data.by,
-        })
-      );
-      dispatch(addNotification(`@${data.by} accepted your follow request`));
-    });
-
-    socket.on("followRequestRejected", (data) => {
-      dispatch(addNotification(`@${data.by} rejected your follow request`));
-    });
-
-    return () => {
-      socket.off("followRequestReceived");
-      socket.off("followRequestAccepted");
-      socket.off("followRequestRejected");
-      // socket.disconnect();
-    };
-  }, [authUser, dispatch]);
-
-  /* ⭐ SEND REQUEST */
+  /* ================================
+     SEND FOLLOW REQUEST
+  ================================= */
   const handleSend = async () => {
     if (!usernameInput.trim()) {
       toast.error("Enter a username");
@@ -135,26 +81,34 @@ export default function AddFriends() {
     try {
       setIsSending(true);
       const token = authUser?.token || authUser?.user?.token;
+
       await sendFollowRequest(usernameInput, token);
 
-      dispatch(addNotification(`Follow request sent to @${usernameInput}`));
-      toast.success(`Request sent to @${usernameInput}`);
+      toast.success(`Follow request sent to @${usernameInput}`);
       setUsernameInput("");
     } catch (error) {
-      toast.error(error?.response?.data?.message || "Error");
+      toast.error(error?.response?.data?.message || "Error sending request");
     } finally {
       setIsSending(false);
     }
   };
 
+  /* ================================
+     ACCEPT / DECLINE
+  ================================= */
   const handleAccept = (id) => {
     dispatch(acceptFollowRequest(id));
+    toast.success("Follow request accepted");
   };
 
   const handleDecline = (id) => {
     dispatch(rejectFollowRequest(id));
+    toast("Follow request rejected", { icon: "❌" });
   };
 
+  /* ================================
+     UI
+  ================================= */
   return (
     <div className="min-h-screen flex bg-gray-100">
       <Navbar />
@@ -172,6 +126,7 @@ export default function AddFriends() {
           />
           <button
             onClick={handleSend}
+            disabled={isSending}
             className={`px-8 py-3 rounded-full transition ${
               isSending
                 ? "bg-purple-200 text-purple-700"
@@ -283,4 +238,3 @@ export default function AddFriends() {
     </div>
   );
 }
-
