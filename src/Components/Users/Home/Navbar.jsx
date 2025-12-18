@@ -1,6 +1,5 @@
 
 
-
 import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import {
@@ -34,7 +33,7 @@ export default function Navbar() {
   const notifications = useSelector((state) => state.friends.notifications);
   const notificationCount = notifications.length;
 
-  // ⭐ ACTIVE ROUTE
+  /* ================= ACTIVE ROUTE ================= */
   useEffect(() => {
     const p = location.pathname || "/";
     if (p.startsWith("/home")) setActive("Home");
@@ -43,7 +42,7 @@ export default function Navbar() {
     else if (p.startsWith("/profile")) setActive("Profile");
   }, [location.pathname]);
 
-  // 🔔 SOCKET LISTENERS (ONLY ADDITION)
+  /* ================= SOCKET LISTENERS ================= */
   useEffect(() => {
     if (!user?._id) return;
 
@@ -52,15 +51,21 @@ export default function Navbar() {
     socket.on("articleLiked", (data) => {
       if (data.ownerId === user._id) {
         dispatch(
-          addNotification(`❤️ Your post was liked by ${data.likedBy}`)
+          addNotification({
+            msg: `❤️ Your post was liked by ${data.likedBy}`,
+            time: Date.now(),
+          })
         );
       }
     });
 
-    socket.on("newComment", (data) => {
-      if (data.ownerId === user._id) {
-        dispatch(addNotification("💬 New comment on your post"));
-      }
+    socket.on("newComment", () => {
+      dispatch(
+        addNotification({
+          msg: "💬 New comment on your post",
+          time: Date.now(),
+        })
+      );
     });
 
     return () => {
@@ -69,13 +74,34 @@ export default function Navbar() {
     };
   }, [user?._id, dispatch]);
 
+  /* ================= MENU ITEMS (DESKTOP) ================= */
   const menuItems = [
     { label: "Home", icon: <FiHome size={24} />, route: "/home" },
-    { label: "Search", icon: <FiSearch size={24} />, action: () => setShowSearch(true) },
-    { label: "Notifications", icon: <FiBell size={24} />, action: () => setShowNotifications(true) },
-    { label: "Create Blog", icon: <FiEdit3 size={24} />, action: () => setShowCreateBlog(true) },
-    { label: "Add Friends", icon: <FiUserPlus size={24} />, route: "/addfriends" },
-    { label: "Settings", icon: <FiSettings size={24} />, route: "/settings" },
+    {
+      label: "Search",
+      icon: <FiSearch size={24} />,
+      action: () => setShowSearch(true),
+    },
+    {
+      label: "Notifications",
+      icon: <FiBell size={24} />,
+      action: () => setShowNotifications(true),
+    },
+    {
+      label: "Create Blog",
+      icon: <FiEdit3 size={24} />,
+      action: () => setShowCreateBlog(true),
+    },
+    {
+      label: "Add Friends",
+      icon: <FiUserPlus size={24} />,
+      route: "/addfriends",
+    },
+    {
+      label: "Settings",
+      icon: <FiSettings size={24} />,
+      route: "/settings",
+    },
   ];
 
   const handleClick = (item) => {
@@ -91,8 +117,8 @@ export default function Navbar() {
 
   return (
     <>
-      {/* DESKTOP SIDEBAR */}
-      <div className="hidden md:flex w-64 h-screen border-r px-6 py-8 flex-col space-y-8 bg-white">
+      {/* ================= DESKTOP SIDEBAR ================= */}
+      <div className="hidden md:flex w-64 h-screen border-r px-6 py-8 flex-col space-y-8 bg-white fixed">
         {/* LOGO */}
         <div className="flex items-center gap-3">
           <div className="w-12 h-12 rounded-full bg-purple-600 text-white flex items-center justify-center text-xl font-bold">
@@ -103,7 +129,7 @@ export default function Navbar() {
 
         {/* USER PROFILE */}
         <div className="text-center">
-          <div className="mx-auto w-28 h-28 rounded-full bg-purple-100 flex items-center justify-center overflow-hidden">
+          <div className="mx-auto w-28 h-28 rounded-full bg-purple-100 overflow-hidden">
             <img
               src={
                 user?.profilePhoto
@@ -111,7 +137,7 @@ export default function Navbar() {
                   : "/default-profile.png"
               }
               alt="profile"
-              className="w-24 h-24 rounded-full object-cover"
+              className="w-full h-full object-cover"
             />
           </div>
 
@@ -121,11 +147,7 @@ export default function Navbar() {
 
           <button
             onClick={() => navigate("/profile")}
-            className={`mt-3 px-4 py-2 rounded-lg font-semibold text-sm ${
-              active === "Profile"
-                ? "bg-purple-200 text-purple-700"
-                : "bg-purple-700 text-white"
-            }`}
+            className="mt-3 px-4 py-2 rounded-lg bg-purple-700 text-white text-sm font-semibold"
           >
             My Profile
           </button>
@@ -155,16 +177,16 @@ export default function Navbar() {
         </div>
       </div>
 
-      {/* CREATE BLOG MODAL */}
+      {/* ================= CREATE BLOG MODAL ================= */}
       <CreateBlogModal
         open={showCreateBlog}
         onClose={() => setShowCreateBlog(false)}
         onPost={handlePostBlog}
       />
 
-      {/* NOTIFICATION PANEL */}
+      {/* ================= NOTIFICATION PANEL ================= */}
       {showNotifications && (
-        <div className="fixed top-0 left-0 w-full h-full bg-black/40 z-50">
+        <div className="fixed inset-0 bg-black/40 z-50">
           <div className="w-80 h-full bg-white p-5 overflow-y-auto">
             <h2 className="text-xl font-semibold mb-4">Notifications</h2>
 
@@ -190,7 +212,52 @@ export default function Navbar() {
           </div>
         </div>
       )}
+
+      {/* ================= MOBILE BOTTOM NAVBAR ================= */}
+      <div className="fixed bottom-0 left-0 right-0 z-50 md:hidden bg-white border-t shadow-lg">
+        <div className="flex justify-around items-center h-16">
+          <button onClick={() => navigate("/home")}>
+            <FiHome size={22} />
+          </button>
+
+          <button onClick={() => setShowSearch(true)}>
+            <FiSearch size={22} />
+          </button>
+
+          <button onClick={() => setShowCreateBlog(true)}>
+            <FiEdit3 size={26} className="text-purple-600" />
+          </button>
+
+          {/* ⭐ ADD FRIENDS (MOBILE) */}
+          <button onClick={() => navigate("/addfriends")}>
+            <FiUserPlus size={22} />
+          </button>
+
+          <button
+            onClick={() => setShowNotifications(true)}
+            className="relative"
+          >
+            {notificationCount > 0 && (
+              <span className="absolute -top-1 -right-2 w-4 h-4 bg-red-500 text-white text-[10px] rounded-full flex items-center justify-center">
+                {notificationCount}
+              </span>
+            )}
+            <FiBell size={22} />
+          </button>
+
+          <button onClick={() => navigate("/profile")}>
+            <img
+              src={
+                user?.profilePhoto
+                  ? `data:image/jpeg;base64,${user.profilePhoto}`
+                  : "/default-profile.png"
+              }
+              className="w-8 h-8 rounded-full object-cover"
+              alt="me"
+            />
+          </button>
+        </div>
+      </div>
     </>
   );
 }
-
