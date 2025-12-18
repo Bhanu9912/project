@@ -1,7 +1,7 @@
 
 
+
 import React, { useState, useEffect } from "react";
-import Navbar from "./Navbar";
 import { useSelector, useDispatch } from "react-redux";
 import toast from "react-hot-toast";
 
@@ -25,7 +25,7 @@ export default function AddFriends() {
   const [isSending, setIsSending] = useState(false);
 
   /* ================================
-     DERIVED DATA (NO LOCAL STATE)
+     DERIVED DATA
   ================================= */
   const user = authUser?.user;
 
@@ -48,7 +48,7 @@ export default function AddFriends() {
     }));
 
   /* ================================
-     INITIAL REQUESTS LOAD (ON LOGIN)
+     INITIAL REQUESTS LOAD
   ================================= */
   useEffect(() => {
     if (!user) return;
@@ -70,7 +70,7 @@ export default function AddFriends() {
   }, [user, dispatch]);
 
   /* ================================
-     SEND FOLLOW REQUEST
+     SEND REQUEST
   ================================= */
   const handleSend = async () => {
     if (!usernameInput.trim()) {
@@ -81,7 +81,6 @@ export default function AddFriends() {
     try {
       setIsSending(true);
       const token = authUser?.token || authUser?.user?.token;
-
       await sendFollowRequest(usernameInput, token);
 
       toast.success(`Follow request sent to @${usernameInput}`);
@@ -110,16 +109,17 @@ export default function AddFriends() {
      UI
   ================================= */
   return (
-    <div className="min-h-screen flex bg-gray-100">
-      <Navbar />
+    <div className="min-h-screen bg-gray-100  pb-16 md:pb-0">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* HEADER */}
+        <h1 className="text-2xl sm:text-3xl font-bold mb-6 text-center sm:text-left">
+          Add Friends
+        </h1>
 
-      <div className="flex-1 p-10">
-        <h1 className="text-3xl font-bold mb-8">Add Friends</h1>
-
-        {/* 🔍 INPUT */}
-        <div className="flex gap-4 mb-10">
+        {/* INPUT */}
+        <div className="flex flex-col sm:flex-row gap-4 mb-8 items-center sm:items-stretch">
           <input
-            className="border p-3 rounded-full w-[420px] focus:outline-none"
+            className="border px-5 py-3 rounded-full w-full max-w-md focus:outline-none"
             placeholder="Enter username..."
             value={usernameInput}
             onChange={(e) => setUsernameInput(e.target.value)}
@@ -127,7 +127,7 @@ export default function AddFriends() {
           <button
             onClick={handleSend}
             disabled={isSending}
-            className={`px-8 py-3 rounded-full transition ${
+            className={`px-8 py-3 rounded-full font-medium transition ${
               isSending
                 ? "bg-purple-200 text-purple-700"
                 : "bg-purple-600 text-white hover:bg-purple-700"
@@ -137,8 +137,8 @@ export default function AddFriends() {
           </button>
         </div>
 
-        {/* 🧭 TAB BAR */}
-        <div className="flex gap-8 border-b mb-8">
+        {/* TABS */}
+        <div className="flex gap-6 border-b mb-6">
           {["followers", "following", "requests"].map((tab) => (
             <button
               key={tab}
@@ -154,18 +154,18 @@ export default function AddFriends() {
           ))}
         </div>
 
-        {/* 👥 FOLLOWERS / FOLLOWING */}
+        {/* FOLLOWERS / FOLLOWING */}
         {(activeTab === "followers" || activeTab === "following") && (
           <>
             {(activeTab === "followers" ? followers : following).length === 0 ? (
               <p className="text-gray-500">No users</p>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
                 {(activeTab === "followers" ? followers : following).map(
                   (fr) => (
                     <div
                       key={fr._id}
-                      className="bg-white border rounded-xl p-5 flex flex-col items-center text-center"
+                      className="bg-white rounded-xl border p-5 flex flex-col items-center text-center hover:shadow-md transition"
                     >
                       <img
                         src={
@@ -188,17 +188,17 @@ export default function AddFriends() {
           </>
         )}
 
-        {/* 📩 REQUESTS */}
+        {/* REQUESTS */}
         {activeTab === "requests" && (
           <>
             {requests.length === 0 ? (
               <p className="text-gray-500">No friend requests</p>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
                 {requests.map((req) => (
                   <div
                     key={req.id}
-                    className="bg-white border rounded-xl p-5 flex flex-col items-center text-center"
+                    className="bg-white rounded-xl border p-5 flex flex-col items-center text-center hover:shadow-md transition"
                   >
                     <img
                       src={
@@ -217,13 +217,13 @@ export default function AddFriends() {
                     <div className="flex gap-3">
                       <button
                         onClick={() => handleAccept(req.id)}
-                        className="bg-purple-600 text-white px-4 py-1 rounded-full"
+                        className="bg-purple-600 text-white px-4 py-1 rounded-full text-sm"
                       >
                         Accept
                       </button>
                       <button
                         onClick={() => handleDecline(req.id)}
-                        className="bg-gray-200 text-gray-700 px-4 py-1 rounded-full"
+                        className="bg-gray-200 text-gray-700 px-4 py-1 rounded-full text-sm"
                       >
                         Decline
                       </button>

@@ -50,13 +50,18 @@ export default function Home() {
     <div className="min-h-screen w-full bg-gray-50 text-gray-900">
       <div className="flex h-screen w-full">
 
-        <Navbar
+        {/* <Navbar
           activeNav={activeNav}
           setActiveNav={setActiveNav}
           onOpenCreate={handleOpenCreate}
-        />
+        /> */}
 
         <main className="flex-1 h-screen overflow-y-auto p-4 md:p-8 flex flex-col gap-6">
+        {/* <main className="flex-1 h-screen overflow-y-auto 
+                 p-4 md:p-8 
+                 flex flex-col gap-6
+                 md:ml-64 pb-16 md:pb-0"> */}
+
 
           {/* HERO */}
           <section className="flex flex-col md:flex-row gap-6 items-center border-b border-gray-200 pb-6 text-center md:text-left">
