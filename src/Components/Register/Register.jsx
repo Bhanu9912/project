@@ -10,8 +10,6 @@ import React, {
 import Cropper from "react-easy-crop";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
-// import { registerUser } from "../../slice";
-// import { registerUser } from "../../slice";
 import { registerUser } from "../../authSlice";
 import { useDispatch, useSelector } from "react-redux";
 import { FiEye, FiEyeOff } from "react-icons/fi";
@@ -59,7 +57,6 @@ const getCroppedImg = (imageSrc, pixelCrop) => {
 const Register = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  // const { loading } = useSelector((state) => state.user || {});
   const authState = useSelector((state) => state.auth) || {};
   const loading = authState.loading || false;
 
@@ -194,7 +191,9 @@ const Register = () => {
       toast.success("Registered!");
       navigate("/");
     } catch (err) {
-      toast.error(err?.response?.data?.message || "Registration Failed");
+      // toast.error(err?.response?.data?.message || "Registration Failed");
+      toast.error(err?.message || "Registration Failed");
+
     }
   };
 
