@@ -1,9 +1,12 @@
+
+
 import React, { useState, useMemo } from "react";
 import { FiHeart, FiMessageCircle, FiUser } from "react-icons/fi";
 import { useDispatch, useSelector } from "react-redux";
 import { toggleLike } from "../../../BlogSlice";
 import BlogComments from "./BlogComments";
 
+/* ================= PROFILE IMAGE ================= */
 function getProfileSrc(profilePhoto) {
   if (!profilePhoto) return null;
   if (typeof profilePhoto === "string") {
@@ -23,7 +26,7 @@ function getProfileSrc(profilePhoto) {
   return null;
 }
 
-// TIME AGO
+/* ================= TIME AGO ================= */
 function timeAgo(time) {
   if (!time) return "";
   const now = new Date();
@@ -49,9 +52,48 @@ export default function BlogCard({ blog }) {
   const [openComments, setOpenComments] = useState(false);
 
   const auth = useSelector((state) => state.auth.user);
-  const userId = auth?.user?._id || auth?._id;
+  const me = auth?.user || {};
 
-  const isLiked = blog.likes?.includes(userId);
+  const myId = me?._id;
+  const blogUserId = blog?.user?._id;
+
+  const isLiked = blog.likes?.includes(myId);
+
+  /* =====================================================
+     🔁 RESOLVE BLOG USER FROM FOLLOWERS / FOLLOWING
+  ===================================================== */
+  const blogUser = useMemo(() => {
+    if (!blogUserId) return {};
+
+    // If it's my own post
+    if (blogUserId === myId) {
+      return {
+        username: "You",
+        email: me?.email,
+      };
+    }
+
+    const allUsers = [
+      ...(me?.followers || []),
+      ...(me?.following || []),
+    ];
+
+    const found = allUsers.find(
+      (u) => u?._id === blogUserId || u?.id === blogUserId
+    );
+
+    return {
+      username: found?.username || null,
+      email: blog?.user?.email || null,
+    };
+  }, [
+    blogUserId,
+    myId,
+    me?.followers,
+    me?.following,
+    me?.email,
+    blog?.user?.email,
+  ]);
 
   const profileSrc = useMemo(
     () => getProfileSrc(blog?.user?.profilePhoto),
@@ -60,38 +102,50 @@ export default function BlogCard({ blog }) {
 
   return (
     <div className="bg-gray-100 rounded-xl p-5 flex flex-col gap-4 shadow-sm">
-
-      {/* HEADER */}
+      {/* ================= HEADER ================= */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <div className="w-12 h-12 rounded-full overflow-hidden bg-purple-200 flex items-center justify-center">
             {profileSrc ? (
-              <img src={profileSrc} className="w-full h-full object-cover" />
+              <img
+                src={profileSrc}
+                alt="profile"
+                className="w-full h-full object-cover"
+              />
             ) : (
               <FiUser className="text-2xl text-purple-600" />
             )}
           </div>
 
-          <div className="flex flex-col">
-            {/* ⭐ EMAIL: Bigger + Bold */}
-            <span className="text-base font-bold text-gray-900">
-              {blog?.user?.email}
-            </span>
+          {/* USER NAME + EMAIL */}
+          <div className="flex flex-col leading-tight">
+            {/* Username */}
+            {blogUser.username && (
+              <span className="text-base font-semibold text-gray-900">
+                {blogUser.username}
+              </span>
+            )}
+
+            {/* Email (lighter + smaller) */}
+            {blogUser.email && (
+              <span className="text-xs text-gray-400">
+                {blogUser.email}
+              </span>
+            )}
           </div>
         </div>
 
-        <span className="text-[11px] text-gray-500">{timeAgo(blog.createdAt)}</span>
+        <span className="text-[11px] text-gray-500">
+          {timeAgo(blog.createdAt)}
+        </span>
       </div>
 
-      {/* BLOG TITLE (Bigger + semi-bold) */}
+      {/* ================= BLOG ================= */}
       <p className="text-lg font-semibold text-gray-800">{blog.title}</p>
-
-      {/* BLOG CONTENT */}
       <p className="text-gray-700 text-sm">{blog.content}</p>
 
-      {/* ACTIONS */}
+      {/* ================= ACTIONS ================= */}
       <div className="flex items-center justify-end gap-6 pt-2 border-t">
-
         <button
           onClick={() => dispatch(toggleLike(blog._id))}
           className="flex items-center gap-1 text-xs"
@@ -116,14 +170,13 @@ export default function BlogCard({ blog }) {
           <FiMessageCircle className="text-lg" />
           <span>Comments</span>
           <span className="text-[11px] text-gray-500">
-            • {blog.comments?.length}
+            • {blog.comments?.length || 0}
           </span>
         </div>
       </div>
 
-      {/* INLINE COMMENTS */}
+      {/* ================= COMMENTS ================= */}
       {openComments && <BlogComments blog={blog} />}
     </div>
   );
 }
-
